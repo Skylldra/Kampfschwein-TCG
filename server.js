@@ -14,6 +14,7 @@ const pool = new Pool({
 
 // Statische Dateien bereitstellen
 app.use('/cards', express.static(path.join(__dirname, 'cards')));
+app.use('/styles', express.static(path.join(__dirname, 'styles')));
 
 // Kartenpool mit Index für Nummerierung
 const cards = [
@@ -49,13 +50,38 @@ app.get('/:username', async (req, res) => {
             const imgExt = isOwned ? 'png' : 'jpg';
             const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.${imgExt}`;
             const displayText = isOwned ? `${card} ${cardNumber}/${totalCards} - ${ownedCards.get(card)}` : `??? ${cardNumber}/${totalCards}`;
-            return `<div style='display:inline-block; margin:10px; text-align:center;'>
-                        <img src='${imgSrc}' style='width:150px; height:200px;'>
+            return `<div class='card-container' onclick='enlargeCard(this)'>
+                        <img src='${imgSrc}' class='card-img'>
                         <p>${displayText}</p>
                     </div>`;
         }).join('');
         
-        res.send(`<h1>Album von ${username}</h1><div>${albumHtml}</div>`);
+        res.send(`<!DOCTYPE html>
+        <html lang='de'>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+            <title>Schweinchen-Sammelalbum von ${username}</title>
+            <link rel='stylesheet' href='/styles/album.css'>
+        </head>
+        <body>
+            <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
+            <div class='album-grid'>${albumHtml}</div>
+            <div id='overlay' onclick='closeEnlarged()'>
+                <img id='overlay-img'>
+            </div>
+            <script>
+                function enlargeCard(card) {
+                    const imgSrc = card.querySelector('img').src;
+                    document.getElementById('overlay-img').src = imgSrc;
+                    document.getElementById('overlay').style.display = 'flex';
+                }
+                function closeEnlarged() {
+                    document.getElementById('overlay').style.display = 'none';
+                }
+            </script>
+        </body>
+        </html>`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
