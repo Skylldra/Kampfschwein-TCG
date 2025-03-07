@@ -25,6 +25,12 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Datum in deutsches Format umwandeln
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
 // Benutzeralbum anzeigen (z. B. /x_MeduZa_ zeigt das Album von x_MeduZa_)
 app.get('/:username', async (req, res) => {
     const username = req.params.username;
@@ -35,7 +41,8 @@ app.get('/:username', async (req, res) => {
         const userCards = result.rows.map(row => {
             const cardIndex = cards.indexOf(row.card_name);
             const cardNumber = cardIndex !== -1 ? String(cardIndex + 1).padStart(2, '0') : "??";
-            return `${row.card_name} ${cardNumber}/${totalCards} - ${row.obtained_date}`;
+            const formattedDate = formatDate(row.obtained_date);
+            return `${row.card_name} ${cardNumber}/${totalCards} - ${formattedDate}`;
         });
         res.send(`<h1>Album von ${username}</h1><p>${userCards.join('<br>') || 'Noch keine Karten'}</p>`);
     } catch (err) {
