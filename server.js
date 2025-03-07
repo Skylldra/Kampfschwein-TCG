@@ -1,8 +1,7 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
 const { Pool } = require('pg');
 require('dotenv').config();
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,18 +12,9 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
-// Sicherstellen, dass der public-Ordner existiert
-const publicDir = path.join(__dirname, 'public');
-if (!fs.existsSync(publicDir)) {
-    fs.mkdirSync(publicDir);
-}
-
-// Statische Dateien bereitstellen
-app.use(express.static(publicDir));
-
 // Root-Route für index.html
 app.get('/', (req, res) => {
-    res.sendFile(path.join(publicDir, 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Kartenpool
