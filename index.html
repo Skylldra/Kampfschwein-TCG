@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kampfschwein90 TCG</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Kampfschwein90 TCG</h1>
+    <p>Ziehe Sammelkarten und vervollständige dein Album!</p>
+    <input type="text" id="username" placeholder="Dein Twitch-Name">
+    <button onclick="drawCard()">Karte ziehen</button>
+    <button onclick="viewAlbum()">Album ansehen</button>
+    <div id="result"></div>
+    <div id="album"></div>
+    
+    <script>
+        async function drawCard() {
+            const username = document.getElementById('username').value;
+            if (!username) {
+                alert('Bitte gib deinen Twitch-Namen ein!');
+                return;
+            }
+            const response = await fetch(`/draw?user=${username}`);
+            const text = await response.text();
+            document.getElementById('result').innerText = text;
+        }
+
+        async function viewAlbum() {
+            const username = document.getElementById('username').value;
+            if (!username) {
+                alert('Bitte gib deinen Twitch-Namen ein!');
+                return;
+            }
+            const response = await fetch(`/album?user=${username}`);
+            const cards = await response.json();
+            document.getElementById('album').innerHTML = `<h2>Dein Album</h2><p>${cards.join(', ')}</p>`;
+        }
+    </script>
+</body>
+</html>
