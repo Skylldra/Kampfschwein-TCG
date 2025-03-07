@@ -12,6 +12,14 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
+// Kartenpool mit Index für Nummerierung
+const cards = [
+    "Officer Schwein", "Vampir Schwein", "Ritter Schwein", "Zauberer Schwein",
+    "Cyber Schwein", "Ninja Schwein", "Piraten Schwein", "Alien Schwein",
+    "Zombie Schwein", "Geister Schwein", "Gladiator Schwein", "Samurai Schwein"
+];
+const totalCards = cards.length;
+
 // Root-Route für index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -37,12 +45,9 @@ app.get('/random/:username', async (req, res) => {
     const username = req.params.username;
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
-    const cards = [
-        "Officer Schwein", "Vampir Schwein", "Ritter Schwein", "Zauberer Schwein",
-        "Cyber Schwein", "Ninja Schwein", "Piraten Schwein", "Alien Schwein",
-        "Zombie Schwein", "Geister Schwein", "Gladiator Schwein", "Samurai Schwein"
-    ];
-    const card = cards[Math.floor(Math.random() * cards.length)];
+    const randomIndex = Math.floor(Math.random() * totalCards);
+    const card = cards[randomIndex];
+    const cardNumber = String(randomIndex + 1).padStart(2, '0');
     const date = new Date().toISOString().split('T')[0];
 
     try {
@@ -50,7 +55,7 @@ app.get('/random/:username', async (req, res) => {
             "INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)",
             [username, card, date]
         );
-        res.send(`${username} hat die Karte '${card}' gezogen!`);
+        res.send(`${card} ${cardNumber}/${totalCards}`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Speichern der Karte");
