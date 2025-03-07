@@ -38,13 +38,20 @@ app.get('/:username', async (req, res) => {
 
     try {
         const result = await pool.query("SELECT card_name, obtained_date FROM user_cards WHERE username = $1", [username]);
-        const userCards = result.rows.map(row => {
-            const cardIndex = cards.indexOf(row.card_name);
-            const cardNumber = cardIndex !== -1 ? String(cardIndex + 1).padStart(2, '0') : "??";
-            const formattedDate = formatDate(row.obtained_date);
-            return `${row.card_name} ${cardNumber}/${totalCards} - ${formattedDate}`;
-        });
-        res.send(`<h1>Album von ${username}</h1><p>${userCards.join('<br>') || 'Noch keine Karten'}</p>`);
+        const ownedCards = new Map(result.rows.map(row => [row.card_name, formatDate(row.obtained_date)]));
+        
+        const albumHtml = cards.map((card, index) => {
+            const cardNumber = String(index + 1).padStart(2, '0');
+            const isOwned = ownedCards.has(card);
+            const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
+            const displayText = isOwned ? `${card} ${cardNumber}/${totalCards} - ${ownedCards.get(card)}` : `??? ${cardNumber}/${totalCards}`;
+            return `<div style='display:inline-block; margin:10px; text-align:center;'>
+                        <img src='${imgSrc}' style='width:150px; height:200px;'>
+                        <p>${displayText}</p>
+                    </div>`;
+        }).join('');
+        
+        res.send(`<h1>Album von ${username}</h1><div>${albumHtml}</div>`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
