@@ -14,7 +14,6 @@ const pool = new Pool({
 
 // Statische Dateien bereitstellen
 app.use('/cards', express.static(path.join(__dirname, 'cards')));
-app.use('/styles', express.static(path.join(__dirname, 'styles')));
 
 // Kartenpool mit Index für Nummerierung
 const cards = [
@@ -35,7 +34,7 @@ function formatDate(dateString) {
     return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-// Benutzeralbum anzeigen (z. B. /x_MeduZa_ zeigt das Album von x_MeduZa_)
+// Benutzeralbum anzeigen
 app.get('/:username', async (req, res) => {
     const username = req.params.username;
     if (!username) return res.status(400).send("Fehlender Benutzername");
@@ -62,7 +61,16 @@ app.get('/:username', async (req, res) => {
             <meta charset='UTF-8'>
             <meta name='viewport' content='width=device-width, initial-scale=1.0'>
             <title>Schweinchen-Sammelalbum von ${username}</title>
-            <link rel='stylesheet' href='/styles/album.css'>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f8f8; }
+                .album-title { font-size: 2em; margin-bottom: 20px; }
+                .album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; justify-content: center; max-width: 900px; margin: auto; }
+                .card-container { text-align: center; cursor: pointer; }
+                .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
+                .card-img:hover { transform: scale(1.1); }
+                #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; align-items: center; justify-content: center; }
+                #overlay-img { max-width: 80%; max-height: 80%; }
+            </style>
         </head>
         <body>
             <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
@@ -88,7 +96,7 @@ app.get('/:username', async (req, res) => {
     }
 });
 
-// Zufällige Karte ziehen (z. B. /random/x_MeduZa_ für x_MeduZa_)
+// Zufällige Karte ziehen
 app.get('/random/:username', async (req, res) => {
     const username = req.params.username;
     if (!username) return res.status(400).send("Fehlender Benutzername");
