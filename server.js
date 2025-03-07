@@ -12,6 +12,9 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
+// Statische Dateien bereitstellen
+app.use('/cards', express.static(path.join(__dirname, 'cards')));
+
 // Kartenpool mit Index für Nummerierung
 const cards = [
     "Officer Schwein", "Vampir Schwein", "Ritter Schwein", "Zauberer Schwein",
@@ -43,7 +46,8 @@ app.get('/:username', async (req, res) => {
         const albumHtml = cards.map((card, index) => {
             const cardNumber = String(index + 1).padStart(2, '0');
             const isOwned = ownedCards.has(card);
-            const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
+            const imgExt = isOwned ? 'png' : 'jpg';
+            const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.${imgExt}`;
             const displayText = isOwned ? `${card} ${cardNumber}/${totalCards} - ${ownedCards.get(card)}` : `??? ${cardNumber}/${totalCards}`;
             return `<div style='display:inline-block; margin:10px; text-align:center;'>
                         <img src='${imgSrc}' style='width:150px; height:200px;'>
