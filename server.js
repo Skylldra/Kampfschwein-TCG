@@ -13,12 +13,18 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
+// Sicherstellen, dass der public-Ordner existiert
+const publicDir = path.join(__dirname, 'public');
+if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir);
+}
+
 // Statische Dateien bereitstellen
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(publicDir));
 
 // Root-Route für index.html
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(publicDir, 'index.html'));
 });
 
 // Kartenpool
