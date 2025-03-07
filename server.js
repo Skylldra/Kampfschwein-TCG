@@ -31,9 +31,13 @@ app.get('/:username', async (req, res) => {
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
     try {
-        const result = await pool.query("SELECT card_name FROM user_cards WHERE username = $1", [username]);
-        const userCards = result.rows.map(row => row.card_name);
-        res.send(`<h1>Album von ${username}</h1><p>${userCards.join(', ') || 'Noch keine Karten'}</p>`);
+        const result = await pool.query("SELECT card_name, obtained_date FROM user_cards WHERE username = $1", [username]);
+        const userCards = result.rows.map(row => {
+            const cardIndex = cards.indexOf(row.card_name);
+            const cardNumber = cardIndex !== -1 ? String(cardIndex + 1).padStart(2, '0') : "??";
+            return `${row.card_name} ${cardNumber}/${totalCards} - ${row.obtained_date}`;
+        });
+        res.send(`<h1>Album von ${username}</h1><p>${userCards.join('<br>') || 'Noch keine Karten'}</p>`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
