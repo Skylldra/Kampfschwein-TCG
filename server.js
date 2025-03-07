@@ -14,7 +14,12 @@ const pool = new Pool({
 });
 
 // Statische Dateien bereitstellen
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Root-Route für index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Kartenpool
 const cards = [
