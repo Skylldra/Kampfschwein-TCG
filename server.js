@@ -44,29 +44,19 @@ app.get('/:username', async (req, res) => {
         const result = await pool.query("SELECT card_name, obtained_date FROM user_cards WHERE username = $1 OR LOWER(username) = LOWER($1);", [username]);
         const ownedCards = new Map(result.rows.map(row => [row.card_name, formatDate(row.obtained_date)]));
 
-        // Fügt in der HTML-Generierung folgendes hinzu
         const albumHtml = cards.map((card, index) => {
             const cardNumber = String(index + 1).padStart(2, '0');
             const isOwned = ownedCards.has(card);
             const imgExt = isOwned ? 'png' : 'jpg';
-            const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.${imgExt}`;
-            const displayText = isOwned ? `${card} ${cardNumber}/${totalCards}<br>${ownedCards.get(card)}` : `??? ${cardNumber}/${totalCards}`;
-    
-            // Blurred-Bilder nicht klickbar machen
-            const clickHandler = isOwned ? "onclick='enlargeCard(this)'" : "";
-
-            return `<div class='card-container'>
-                        <img src='${imgSrc}' class='card-img' ${clickHandler} oncontextmenu="return false;">
+            const imgSrc = isOwned ? /cards/${cardNumber}.png : /cards/${cardNumber}_blurred.${imgExt};
+            const displayText = isOwned ? ${card} ${cardNumber}/${totalCards}<br>${ownedCards.get(card)} : ??? ${cardNumber}/${totalCards};
+            return <div class='card-container' onclick='enlargeCard(this)'>
+                        <img src='${imgSrc}' class='card-img'>
                         <p>${displayText}</p>
-                    </div>`;
+                    </div>;
         }).join('');
 
-        // Fügt ins `<script>` innerhalb der `res.send(...)` hinzu
-        document.addEventListener("contextmenu", function(event) {
-            event.preventDefault();
-        });
-        
-        res.send(`<!DOCTYPE html>
+        res.send(<!DOCTYPE html>
         <html lang='de'>
         <head>
             <meta charset='UTF-8'>
@@ -155,7 +145,7 @@ app.get('/:username', async (req, res) => {
                 }
             </script>
         </body>
-        </html>`);
+        </html>);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
@@ -177,7 +167,7 @@ app.get('/random/:username', async (req, res) => {
             "INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)",
             [username, card, date]
         );
-        res.send(`${card} ${cardNumber}/${totalCards}`);
+        res.send(${card} ${cardNumber}/${totalCards});
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Speichern der Karte");
@@ -185,5 +175,5 @@ app.get('/random/:username', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server läuft auf Port ${port}`);
+    console.log(Server läuft auf Port ${port});
 });
