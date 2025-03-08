@@ -90,7 +90,7 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player immer optimal positioniert */
+        /* Twitch-Player: Dynamische Größe + Kein überlappendes Zoomen */
         .twitch-wrapper {
             position: fixed;
             left: 20px;
@@ -104,12 +104,17 @@ app.get('/:username', async (req, res) => {
             border: 3px solid #6016FF;
             overflow: hidden;
             z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Twitch Iframe passt sich immer an */
+        /* Twitch-Player skalieren, damit es nicht abgeschnitten aussieht */
         .twitch-wrapper iframe {
             width: 100%;
             height: 100%;
+            transform: scale(0.85); /* Skaliert den Inhalt kleiner, damit alles sichtbar ist */
+            transform-origin: top left; /* Verhindert das Verschieben */
         }
 
         .album-title { 
