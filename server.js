@@ -76,7 +76,7 @@ app.get('/:username', async (req, res) => {
                     left: 0;
                     width: 100%;
                     height: 100%;
-                    background: rgba(255, 255, 255, 0.25); /* 25% Transparenz */
+                    background: rgba(255, 255, 255, 0.45); /* 45% Transparenz */
                     z-index: -1;
                 }
 
