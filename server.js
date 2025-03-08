@@ -14,7 +14,7 @@ const pool = new Pool({
 
 // Statische Dateien bereitstellen
 app.use('/cards', express.static(path.join(__dirname, 'cards')));
-app.use('/background', express.static(path.join(__dirname, 'background.png')));
+app.use(express.static(path.join(__dirname))); // Macht background.png verfügbar
 
 // Kartenpool mit Index für Nummerierung
 const cards = [
@@ -66,10 +66,9 @@ app.get('/:username', async (req, res) => {
                 body { 
                     font-family: Arial, sans-serif; 
                     text-align: center; 
-                    background: url('/background/background.png') no-repeat center center fixed; 
+                    background: url('/background.png') no-repeat center center fixed; 
                     background-size: cover;
                 }
-
                 body::after {
                     content: "";
                     position: fixed;
