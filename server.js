@@ -94,7 +94,18 @@ app.get('/:username', async (req, res) => {
                     max-width: 900px; 
                     margin: auto; 
                 }
-                .card-container { text-align: center; cursor: pointer; }
+                .card-container p { 
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    background: white; 
+                    border: 2px solid #6016FF;
+                    padding: 5px;
+                    margin-top: 5px;
+                    width: fit-content;
+                    font-weight: bold;
+                }
                 .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
                 .card-img:hover { transform: scale(1.1); }
                 #overlay { 
