@@ -90,16 +90,16 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player links am Rand fixiert */
+        /* Twitch-Player größer machen, aber Abstand lassen */
         .twitch-wrapper {
             position: fixed;
-            left: 20px; /* Abstand zum linken Bildschirmrand */
+            left: 20px; /* Abstand zum linken Rand */
             top: 50%;
-            transform: translateY(-50%); /* Zentrieren */
-            width: 350px;
-            height: 200px;
+            transform: translateY(-50%);
+            width: 500px; /* Größerer Player */
+            height: 280px; /* Höhe angepasst */
             border-radius: 10px;
-            border: 2px solid #6016FF;
+            border: 3px solid #6016FF;
             overflow: hidden;
             z-index: 10; /* Damit der Player über dem Hintergrund bleibt */
         }
@@ -195,8 +195,7 @@ app.get('/:username', async (req, res) => {
         }
     </script>
 </body>
-</html>
-`);
+</html>`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
