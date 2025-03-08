@@ -107,7 +107,7 @@ app.get('/:username', async (req, res) => {
             align-items: center;
             justify-content: center;
             background: black;
-            transition: all 0.3s ease-in-out; /* Sanfte Größenanpassung */
+            transition: all 0.3s ease-in-out;
         }
 
         /* Twitch-Player links */
@@ -131,34 +131,6 @@ app.get('/:username', async (req, res) => {
             width: 100%;
             height: 100%;
             object-fit: contain;
-        }
-
-        /* Dynamische Größenanpassung bei kleineren Bildschirmen */
-        @media (max-width: 1400px) {
-            .twitch-wrapper, .streamplan-wrapper {
-                width: 18vw;
-                height: calc(18vw * 0.5625);
-            }
-        }
-
-        @media (max-width: 1200px) {
-            .twitch-wrapper, .streamplan-wrapper {
-                width: 16vw;
-                height: calc(16vw * 0.5625);
-            }
-        }
-
-        @media (max-width: 1000px) {
-            .twitch-wrapper, .streamplan-wrapper {
-                width: 14vw;
-                height: calc(14vw * 0.5625);
-            }
-        }
-
-        /* Falls trotzdem kein Platz ist → ausblenden */
-        .hidden {
-            opacity: 0;
-            pointer-events: none;
         }
 
         .album-title { 
@@ -253,7 +225,7 @@ app.get('/:username', async (req, res) => {
             document.getElementById('overlay').style.display = 'none';
         }
 
-        function checkOverlap() {
+        function adjustSize() {
             const twitch = document.getElementById('twitchPlayer');
             const streamplan = document.getElementById('streamplanImage');
             const cards = document.querySelector('.album-grid');
@@ -264,27 +236,42 @@ app.get('/:username', async (req, res) => {
             const streamplanRect = streamplan.getBoundingClientRect();
             const cardsRect = cards.getBoundingClientRect();
 
-            // Falls Player oder Streamplan überlappt, zuerst verkleinern
-            if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
-                twitch.style.width = "12vw";
-                twitch.style.height = "calc(12vw * 0.5625)";
-                streamplan.style.width = "12vw";
-                streamplan.style.height = "calc(12vw * 0.5625)";
-            }
+            let newSize = 20; // Ausgangsgröße
 
-            // Falls immer noch überlappt → verstecken
-            if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
-                twitch.classList.add('hidden');
-                streamplan.classList.add('hidden');
-            } else {
-                twitch.classList.remove('hidden');
-                streamplan.classList.remove('hidden');
+            while ((twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) && newSize > 10) {
+                newSize -= 2;
+                twitch.style.width = `${newSize}vw`;
+                twitch.style.height = `calc(${newSize}vw * 0.5625)`;
+                streamplan.style.width = `${newSize}vw`;
+                streamplan.style.height = `calc(${newSize}vw * 0.5625)`;
             }
         }
 
-        // Automatisch überprüfen, wenn das Fenster skaliert oder verändert wird
-        window.addEventListener('resize', checkOverlap);
-        window.addEventListener('load', checkOverlap);
+        function autoAdjustZoom() {
+            let zoomLevel = 100;
+
+            while (zoomLevel > 50) { // Gehe maximal auf 50% Zoom runter
+                document.body.style.zoom = `${zoomLevel}%`;
+
+                // Prüfe ob alles sichtbar ist
+                const twitch = document.getElementById('twitchPlayer').getBoundingClientRect();
+                const streamplan = document.getElementById('streamplanImage').getBoundingClientRect();
+                const cards = document.querySelector('.album-grid').getBoundingClientRect();
+
+                if (twitch.right < cards.left && streamplan.left > cards.right) {
+                    break; // Falls nichts überlappt, stoppe die Schleife
+                }
+
+                zoomLevel -= 5; // Verringere den Zoom in 5%-Schritten
+            }
+        }
+
+        // Automatische Größenanpassung bei Start & bei Änderungen
+        window.addEventListener('resize', adjustSize);
+        window.addEventListener('load', () => {
+            autoAdjustZoom();
+            adjustSize();
+        });
     </script>
 
 </body>
