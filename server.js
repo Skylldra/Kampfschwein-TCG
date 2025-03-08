@@ -90,16 +90,16 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player bleibt groß, wird aber bei Zoom automatisch kleiner */
+        /* Twitch-Player immer optimal positioniert */
         .twitch-wrapper {
             position: fixed;
             left: 20px;
             top: 50%;
             transform: translateY(-50%);
-            width: min(35vw, 700px); /* Nutzt den Platz optimal, aber max. 700px */
-            height: calc(min(35vw, 700px) * 0.5625); /* 16:9 Verhältnis */
-            min-width: 320px; /* Mindestbreite */
-            min-height: 180px; /* Mindesthöhe */
+            width: max(25vw, 500px); /* Nutzt den Platz optimal bis zu den Karten */
+            height: calc(max(25vw, 500px) * 0.5625); /* 16:9 Verhältnis */
+            max-width: 40vw; /* Verhindert, dass es zu groß wird */
+            max-height: 40vh; /* Anpassung an Viewport-Höhe */
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
@@ -110,32 +110,6 @@ app.get('/:username', async (req, res) => {
         .twitch-wrapper iframe {
             width: 100%;
             height: 100%;
-        }
-
-        /* Dynamische Anpassung für höhere Zoomstufen oder kleinere Bildschirme */
-        @media (max-width: 1200px) {
-            .twitch-wrapper {
-                width: min(30vw, 600px);
-                height: calc(min(30vw, 600px) * 0.5625);
-            }
-        }
-        @media (max-width: 1000px) {
-            .twitch-wrapper {
-                width: min(28vw, 500px);
-                height: calc(min(28vw, 500px) * 0.5625);
-            }
-        }
-        @media (max-width: 800px) {
-            .twitch-wrapper {
-                width: min(25vw, 400px);
-                height: calc(min(25vw, 400px) * 0.5625);
-            }
-        }
-        @media (max-width: 600px) {
-            .twitch-wrapper {
-                width: min(22vw, 350px);
-                height: calc(min(22vw, 350px) * 0.5625);
-            }
         }
 
         .album-title { 
