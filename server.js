@@ -41,12 +41,12 @@ app.get('/:username', async (req, res) => {
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
     try {
-        const result = await pool.query(
+        const result = await pool.query(`
             SELECT card_name, COUNT(*) AS count, MIN(obtained_date) AS first_obtained 
             FROM user_cards 
             WHERE username = $1 OR LOWER(username) = LOWER($1) 
             GROUP BY card_name
-        , [username]);
+        `, [username]);
 
         const ownedCards = new Map(result.rows.map(row => [row.card_name, { count: row.count, date: formatDate(row.first_obtained) }]));
 
@@ -54,19 +54,19 @@ app.get('/:username', async (req, res) => {
             const cardNumber = String(index + 1).padStart(2, '0');
             const isOwned = ownedCards.has(card);
             const imgExt = isOwned ? 'png' : 'jpg';
-            const imgSrc = isOwned ? /cards/${cardNumber}.png : /cards/${cardNumber}_blurred.${imgExt};
+            const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.${imgExt}`;
 
-            const countText = isOwned ? ${ownedCards.get(card).count}x  : "";
-            const dateText = isOwned ? <br>${ownedCards.get(card).date} : "";
-            const displayText = isOwned ? ${countText}${card} ${cardNumber}/${totalCards}${dateText} : ??? ${cardNumber}/${totalCards};
+            const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
+            const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
+            const displayText = isOwned ? `${countText}${card} ${cardNumber}/${totalCards}${dateText}` : `??? ${cardNumber}/${totalCards}`;
 
-            return <div class='card-container' onclick='enlargeCard(this)'>
+            return `<div class='card-container' onclick='enlargeCard(this)'>
                         <img src='${imgSrc}' class='card-img'>
                         <p>${displayText}</p>
-                    </div>;
+                    </div>`;
         }).join('');
 
-        res.send(<!DOCTYPE html>
+        res.send(`<!DOCTYPE html>
         <html lang='de'>
 <head>
     <meta charset='UTF-8'>
@@ -176,6 +176,7 @@ app.get('/:username', async (req, res) => {
         }
         .card-img:hover { transform: scale(1.1); }
 
+
         #overlay { 
             position: fixed; 
             top: 0; 
@@ -186,6 +187,7 @@ app.get('/:username', async (req, res) => {
             display: none; 
             align-items: center; 
             justify-content: center; 
+
         }
 
         #overlay-img { max-width: 80%; max-height: 80%; }
@@ -298,7 +300,7 @@ app.get('/:username', async (req, res) => {
     </script>
 
 </body>
-</html>);
+</html>`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
@@ -351,7 +353,7 @@ app.get('/random/:username', async (req, res) => {
             "INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)",
             [username, selectedCard, date]
         );
-        res.send(${selectedCard} ${cardNumber}/${totalCards});
+        res.send(`${selectedCard} ${cardNumber}/${totalCards}`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Speichern der Karte");
@@ -359,5 +361,5 @@ app.get('/random/:username', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(Server läuft auf Port ${port});
+    console.log(`Server läuft auf Port ${port}`);
 });
