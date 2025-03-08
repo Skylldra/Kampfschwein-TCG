@@ -68,92 +68,128 @@ app.get('/:username', async (req, res) => {
 
         res.send(`<!DOCTYPE html>
         <html lang='de'>
-        <head>
-            <meta charset='UTF-8'>
-            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-            <title>Schweinchen-Sammelalbum von ${username}</title>
-            <style>
-                body { 
-                    font-family: Arial, sans-serif; 
-                    text-align: center; 
-                    background: url('/background.png') no-repeat center center fixed; 
-                    background-size: cover;
-                }
-                body::after {
-                    content: "";
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(255, 255, 255, 0.60);
-                    z-index: -1;
-                }
-                .album-title { 
-                    font-size: 2.5em; 
-                    margin-bottom: 20px; 
-                    color: white; 
-                    text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF, 0 0 20px #6016FF; 
-                }
-                .album-grid { 
-                    display: grid; 
-                    grid-template-columns: repeat(3, 1fr); 
-                    gap: 20px; 
-                    justify-content: center; 
-                    max-width: 900px; 
-                    margin: auto; 
-                }
-                .card-container { 
-                    text-align: center; 
-                    display: flex; 
-                    flex-direction: column; 
-                    align-items: center; 
-                }
-                .card-container p { 
-                    background: white; 
-                    border: 2px solid #6016FF;
-                    padding: 5px;
-                    margin-top: 5px;
-                    width: fit-content;
-                    font-weight: bold;
-                    text-align: center;
-                    display: flex;
-                    flex-direction: column;
-                }
-                .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
-                .card-img:hover { transform: scale(1.1); }
-                #overlay { 
-                    position: fixed; 
-                    top: 0; 
-                    left: 0; 
-                    width: 100%; 
-                    height: 100%; 
-                    background: rgba(0, 0, 0, 0.8); 
-                    display: none; 
-                    align-items: center; 
-                    justify-content: center; 
-                }
-                #overlay-img { max-width: 80%; max-height: 80%; }
-            </style>
-        </head>
-        <body>
-            <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-            <div class='album-grid'>${albumHtml}</div>
-            <div id='overlay' onclick='closeEnlarged()'>
-                <img id='overlay-img'>
-            </div>
-            <script>
-                function enlargeCard(card) {
-                    const imgSrc = card.querySelector('img').src;
-                    document.getElementById('overlay-img').src = imgSrc;
-                    document.getElementById('overlay').style.display = 'flex';
-                }
-                function closeEnlarged() {
-                    document.getElementById('overlay').style.display = 'none';
-                }
-            </script>
-        </body>
-        </html>`);
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Schweinchen-Sammelalbum von ${username}</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background: url('/background.png') no-repeat center center fixed; 
+            background-size: cover;
+        }
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.60);
+            z-index: -1;
+        }
+        .album-title { 
+            font-size: 2.5em; 
+            margin-bottom: 20px; 
+            color: white; 
+            text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF, 0 0 20px #6016FF; 
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            max-width: 1200px;
+            margin: auto;
+        }
+        .twitch-container {
+            width: 300px;
+            height: 169px;
+            flex-shrink: 0;
+            border-radius: 10px;
+            border: 2px solid #6016FF;
+            overflow: hidden;
+        }
+        .twitch-embed iframe {
+            width: 100%;
+            height: 100%;
+        }
+        .album-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 20px; 
+            justify-content: center; 
+            max-width: 900px; 
+        }
+        .card-container { 
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .card-container p { 
+            background: white; 
+            border: 2px solid #6016FF;
+            padding: 5px;
+            margin-top: 5px;
+            width: fit-content;
+            font-weight: bold;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
+        .card-img:hover { transform: scale(1.1); }
+        #overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.8); 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        #overlay-img { max-width: 80%; max-height: 80%; }
+    </style>
+</head>
+<body>
+    <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
+    
+    <div class="container">
+        <!-- Twitch Livestream Container -->
+        <div class="twitch-container">
+            <iframe 
+                src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
+                frameborder="0" 
+                allowfullscreen="true" 
+                scrolling="no">
+            </iframe>
+        </div>
+
+        <!-- Album -->
+        <div class='album-grid'>${albumHtml}</div>
+    </div>
+
+    <div id='overlay' onclick='closeEnlarged()'>
+        <img id='overlay-img'>
+    </div>
+
+    <script>
+        function enlargeCard(card) {
+            const imgSrc = card.querySelector('img').src;
+            document.getElementById('overlay-img').src = imgSrc;
+            document.getElementById('overlay').style.display = 'flex';
+        }
+        function closeEnlarged() {
+            document.getElementById('overlay').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
+`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
