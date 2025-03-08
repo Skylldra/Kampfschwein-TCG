@@ -96,8 +96,8 @@ app.get('/:username', async (req, res) => {
             left: 20px; /* Abstand zum linken Rand */
             top: 50%;
             transform: translateY(-50%);
-            width: 640px; /* Breite vergrößert */
-            height: 360px; /* Höhe vergrößert */
+            width: 800px; /* Breite vergrößert */
+            height: 450px; /* Höhe vergrößert */
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
