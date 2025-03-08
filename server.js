@@ -18,9 +18,9 @@ app.use(express.static(path.join(__dirname))); // Macht background.png verfügba
 
 // Kartenpool mit Index für Nummerierung
 const cards = [
-    "Officer Schwein", "Vampir Schwein", "Ritter Schwein", "Zauberer Schwein",
-    "Cyber Schwein", "Ninja Schwein", "Piraten Schwein", "Alien Schwein",
-    "Zombie Schwein", "Geister Schwein", "Gladiator Schwein", "Samurai Schwein"
+    "Vampirschwein", "Astronautenschwein", "Officer Schwein", "König Schweinchen",
+    "Truckerschwein", "Doktor Schwein", "Captain Schweinchen", "Magierschwein",
+    "Boss Schwein", "Feuerwehr Schwein", "Alien Schwein", "Zukunft Schwein"
 ];
 const totalCards = cards.length;
 
