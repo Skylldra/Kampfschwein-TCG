@@ -91,7 +91,7 @@ app.get('/:username', async (req, res) => {
         }
 
         .top-container {
-            display: flex;
+            display: none;
             justify-content: space-between;
             align-items: center;
             width: 100%;
@@ -101,6 +101,9 @@ app.get('/:username', async (req, res) => {
         }
 
         .twitch-wrapper, .streamplan-wrapper {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
             width: max(20vw, 400px);
             height: calc(max(20vw, 400px) * 0.5625);
             max-width: 35vw;
@@ -116,29 +119,17 @@ app.get('/:username', async (req, res) => {
             transition: all 0.3s ease-in-out;
         }
 
-        .twitch-wrapper iframe {
-            width: 100%;
-            height: 100%;
+        .twitch-wrapper {
+            left: 20px;
         }
 
-        .streamplan-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+        .streamplan-wrapper {
+            right: 20px;
         }
 
-        @media (max-width: 1000px) {
-            .top-container {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .twitch-wrapper, .streamplan-wrapper {
-                width: 80%;
-                max-width: 90vw;
-                height: auto;
-                margin-bottom: 10px;
-            }
+        .twitch-wrapper iframe, .streamplan-wrapper img {
+            width: 100%;
+            height: 100%;
         }
 
         .album-title { 
@@ -155,6 +146,10 @@ app.get('/:username', async (req, res) => {
             justify-content: center; 
             max-width: 900px; 
             margin: auto; 
+        }
+
+        .hidden {
+            display: none;
         }
 
         .card-container { 
@@ -200,8 +195,8 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <div class="top-container">
-        <div class="twitch-wrapper" id="twitchPlayer">
+    <div class="top-container" id="topContainer">
+        <div class="twitch-wrapper" id="twitchPlayerTop">
             <iframe 
                 src="https://player.twitch.tv/?channel=zarbex&parent=kampfschwein-tcg.onrender.com" 
                 frameborder="0" 
@@ -210,9 +205,22 @@ app.get('/:username', async (req, res) => {
             </iframe>
         </div>
 
-        <div class="streamplan-wrapper" id="streamplanImage">
+        <div class="streamplan-wrapper" id="streamplanImageTop">
             <img src="/streamplan.png" alt="Streamplan">
         </div>
+    </div>
+
+    <div class="twitch-wrapper" id="twitchPlayer">
+        <iframe 
+            src="https://player.twitch.tv/?channel=zarbex&parent=kampfschwein-tcg.onrender.com" 
+            frameborder="0" 
+            allowfullscreen="true" 
+            scrolling="no">
+        </iframe>
+    </div>
+
+    <div class="streamplan-wrapper" id="streamplanImage">
+        <img src="/streamplan.png" alt="Streamplan">
     </div>
 
     <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
@@ -238,33 +246,28 @@ app.get('/:username', async (req, res) => {
         const streamplan = document.getElementById('streamplanImage');
         const cards = document.querySelector('.album-grid');
 
-        if (!twitch || !streamplan || !cards) return;
+        const topContainer = document.getElementById('topContainer');
+        const twitchTop = document.getElementById('twitchPlayerTop');
+        const streamplanTop = document.getElementById('streamplanImageTop');
+
+        if (!twitch || !streamplan || !cards || !topContainer) return;
 
         const twitchRect = twitch.getBoundingClientRect();
         const streamplanRect = streamplan.getBoundingClientRect();
         const cardsRect = cards.getBoundingClientRect();
 
-        const originalSize = "20vw";
-        const originalHeight = "calc(20vw * 0.5625)";
-
-        if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
-            twitch.style.width = "12vw";
-            twitch.style.height = "calc(12vw * 0.5625)";
-            streamplan.style.width = "12vw";
-            streamplan.style.height = "calc(12vw * 0.5625)";
-        }
-
         if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
             twitch.classList.add('hidden');
             streamplan.classList.add('hidden');
+
+            twitchTop.innerHTML = twitch.innerHTML;
+            streamplanTop.innerHTML = streamplan.innerHTML;
+
+            topContainer.style.display = 'flex';
         } else {
             twitch.classList.remove('hidden');
             streamplan.classList.remove('hidden');
-
-            twitch.style.width = originalSize;
-            twitch.style.height = originalHeight;
-            streamplan.style.width = originalSize;
-            streamplan.style.height = originalHeight;
+            topContainer.style.display = 'none';
         }
     }
 
