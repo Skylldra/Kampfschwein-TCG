@@ -68,6 +68,7 @@ app.get('/:username', async (req, res) => {
 
         res.send(`<!DOCTYPE html>
         <html lang='de'>
+<html lang='de'>
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
@@ -78,6 +79,9 @@ app.get('/:username', async (req, res) => {
             text-align: center; 
             background: url('/background.png') no-repeat center center fixed; 
             background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         body::after {
             content: "";
@@ -95,26 +99,32 @@ app.get('/:username', async (req, res) => {
             color: white; 
             text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF, 0 0 20px #6016FF; 
         }
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 30px;
-            max-width: 1200px;
-            margin: auto;
-        }
-        .twitch-container {
+        
+        /* Neuer Container für den Twitch-Stream */
+        .twitch-wrapper {
+            position: fixed;
+            left: 10px;
+            top: 50px;
             width: 300px;
             height: 169px;
-            flex-shrink: 0;
             border-radius: 10px;
             border: 2px solid #6016FF;
             overflow: hidden;
+            z-index: 10; /* Damit der Player über dem Hintergrund bleibt */
         }
-        .twitch-embed iframe {
+        .twitch-wrapper iframe {
             width: 100%;
             height: 100%;
         }
+
+        /* Layout für das Album */
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-left: 320px; /* Platz für Twitch-Stream reservieren */
+        }
+
         .album-grid { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
@@ -156,20 +166,18 @@ app.get('/:username', async (req, res) => {
     </style>
 </head>
 <body>
-    <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-    
-    <div class="container">
-        <!-- Twitch Livestream Container -->
-        <div class="twitch-container">
-            <iframe 
-                src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
-                frameborder="0" 
-                allowfullscreen="true" 
-                scrolling="no">
-            </iframe>
-        </div>
+    <!-- Twitch Livestream Container (Fest am linken Rand) -->
+    <div class="twitch-wrapper">
+        <iframe 
+            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
+            frameborder="0" 
+            allowfullscreen="true" 
+            scrolling="no">
+        </iframe>
+    </div>
 
-        <!-- Album -->
+    <div class="content-container">
+        <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
         <div class='album-grid'>${albumHtml}</div>
     </div>
 
