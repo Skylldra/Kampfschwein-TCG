@@ -190,7 +190,7 @@ app.get('/:username', async (req, res) => {
 
         #overlay-img { max-width: 80%; max-height: 80%; }
 
-        /* Developer Box bleibt gleich groß */
+                /* Developer Box bleibt immer gleich groß */
         .dev-box {
             position: fixed;
             bottom: 20px;
@@ -204,8 +204,9 @@ app.get('/:username', async (req, res) => {
             cursor: pointer;
             border: 2px solid #6016FF;
             transition: background 0.3s ease-in-out;
-            width: auto;
+            width: fit-content;
             white-space: nowrap;
+            transform: scale(1); /* Verhindert Größenänderung beim Zoomen */
         }
 
         .dev-box:hover {
