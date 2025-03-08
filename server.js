@@ -230,7 +230,13 @@ app.get('/:username', async (req, res) => {
     </div>
 
     <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-    <div class='album-grid'>${albumHtml}</div>
+    res.send(`
+    <html>
+        <body>
+            <div class='album-grid'>${albumHtml}</div>
+        </body>
+    </html>
+`);
 
     <div id='overlay' onclick='closeEnlarged()'>
         <img id='overlay-img'>
