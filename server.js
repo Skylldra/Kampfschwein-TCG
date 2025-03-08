@@ -49,7 +49,7 @@ app.get('/:username', async (req, res) => {
             const isOwned = ownedCards.has(card);
             const imgExt = isOwned ? 'png' : 'jpg';
             const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.${imgExt}`;
-            const displayText = isOwned ? `${card} ${cardNumber}/${totalCards} - ${ownedCards.get(card)}` : `??? ${cardNumber}/${totalCards}`;
+            const displayText = isOwned ? `${card} ${cardNumber}/${totalCards}<br>${ownedCards.get(card)}` : `??? ${cardNumber}/${totalCards}`;
             return `<div class='card-container' onclick='enlargeCard(this)'>
                         <img src='${imgSrc}' class='card-img'>
                         <p>${displayText}</p>
