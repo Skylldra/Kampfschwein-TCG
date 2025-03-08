@@ -68,7 +68,6 @@ app.get('/:username', async (req, res) => {
 
         res.send(`<!DOCTYPE html>
         <html lang='de'>
-<html lang='de'>
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
@@ -91,16 +90,17 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player immer optimal positioniert */
+        /* Twitch-Player dynamisch anpassen */
         .twitch-wrapper {
             position: fixed;
-            left: 20px;
+            left: 20px; /* Immer am linken Rand */
             top: 50%;
             transform: translateY(-50%);
-            width: max(25vw, 500px); /* Nutzt den Platz optimal bis zu den Karten */
-            height: calc(max(25vw, 500px) * 0.5625); /* 16:9 Verhältnis */
-            max-width: 40vw; /* Verhindert, dass es zu groß wird */
-            max-height: 40vh; /* Anpassung an Viewport-Höhe */
+            width: min(40vw, 720px); /* Maximale Breite: 40% des Bildschirms oder 720px */
+            height: calc(min(40vw, 720px) * 0.5625); /* Höhe im 16:9 Format */
+            min-width: 320px; /* Mindestbreite */
+            min-height: 180px; /* Mindesthöhe */
+            max-height: 450px; /* Maximale Höhe */
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
@@ -111,6 +111,26 @@ app.get('/:username', async (req, res) => {
         .twitch-wrapper iframe {
             width: 100%;
             height: 100%;
+        }
+
+        /* Dynamische Anpassung, falls Zoom > 125% */
+        @media (max-width: 1200px) {
+            .twitch-wrapper {
+                width: min(35vw, 600px);
+                height: calc(min(35vw, 600px) * 0.5625);
+            }
+        }
+        @media (max-width: 1000px) {
+            .twitch-wrapper {
+                width: min(30vw, 500px);
+                height: calc(min(30vw, 500px) * 0.5625);
+            }
+        }
+        @media (max-width: 800px) {
+            .twitch-wrapper {
+                width: min(25vw, 400px);
+                height: calc(min(25vw, 400px) * 0.5625);
+            }
         }
 
         .album-title { 
@@ -172,7 +192,7 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <!-- Twitch Livestream Container -->
+    <!-- Twitch Livestream Container (automatisch angepasst) -->
     <div class="twitch-wrapper">
         <iframe 
             src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
