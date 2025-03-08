@@ -34,14 +34,20 @@ function formatDate(dateString) {
     return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-// Benutzeralbum anzeigen (unabhängig von Groß-/Kleinschreibung)
+// Benutzeralbum anzeigen (unabhängig von Groß-/Kleinschreibung, aber Originalname beibehalten)
 app.get('/:username', async (req, res) => {
     let username = req.params.username;
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
-    username = username.toLowerCase();
-    
     try {
+        // Holen des Original-Benutzernamens aus der Datenbank
+        const userResult = await pool.query("SELECT username FROM user_cards WHERE LOWER(username) = LOWER($1) LIMIT 1", [username]);
+        if (userResult.rowCount > 0) {
+            username = userResult.rows[0].username; // Setzt den Originalnamen aus der Datenbank
+        } else {
+            username = req.params.username; // Falls nichts gefunden wurde, bleibt der eingegebene Name
+        }
+
         const result = await pool.query("SELECT card_name, obtained_date FROM user_cards WHERE LOWER(username) = LOWER($1)", [username]);
         const ownedCards = new Map(result.rows.map(row => [row.card_name, formatDate(row.obtained_date)]));
         
