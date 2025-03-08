@@ -109,6 +109,8 @@ app.get('/:username', async (req, res) => {
     width: fit-content;
     font-weight: bold;
     text-align: center;
+    display: flex;
+    flex-direction: column;
 }
 
                 .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
