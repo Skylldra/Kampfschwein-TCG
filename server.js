@@ -90,15 +90,15 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player links */
+        /* Twitch-Player & Streamplan */
         .twitch-wrapper, .streamplan-wrapper {
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            width: max(25vw, 500px); /* Nutzt den Platz optimal */
-            height: calc(max(25vw, 500px) * 0.5625); /* 16:9 Verhältnis */
-            max-width: 40vw; /* Verhindert zu große Darstellung */
-            max-height: 40vh; /* Anpassung an Viewport-Höhe */
+            width: max(25vw, 500px);
+            height: calc(max(25vw, 500px) * 0.5625);
+            max-width: 40vw;
+            max-height: 40vh;
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
@@ -107,6 +107,7 @@ app.get('/:username', async (req, res) => {
             align-items: center;
             justify-content: center;
             background: black;
+            transition: opacity 0.3s ease-in-out; /* Sanftes Ein-/Ausblenden */
         }
 
         /* Twitch-Player links */
@@ -130,6 +131,12 @@ app.get('/:username', async (req, res) => {
             width: 100%;
             height: 100%;
             object-fit: contain;
+        }
+
+        /* Verstecken bei zu hoher Zoomstufe oder kleinem Bildschirm */
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
         }
 
         .album-title { 
@@ -192,7 +199,7 @@ app.get('/:username', async (req, res) => {
 <body>
 
     <!-- Twitch Livestream links -->
-    <div class="twitch-wrapper">
+    <div class="twitch-wrapper" id="twitchPlayer">
         <iframe 
             src="https://player.twitch.tv/?channel=zarbex&parent=kampfschwein-tcg.onrender.com" 
             frameborder="0" 
@@ -202,7 +209,7 @@ app.get('/:username', async (req, res) => {
     </div>
 
     <!-- Streamplan rechts -->
-    <div class="streamplan-wrapper">
+    <div class="streamplan-wrapper" id="streamplanImage">
         <img src="/streamplan.png" alt="Streamplan">
     </div>
 
@@ -219,10 +226,40 @@ app.get('/:username', async (req, res) => {
             document.getElementById('overlay-img').src = imgSrc;
             document.getElementById('overlay').style.display = 'flex';
         }
+
         function closeEnlarged() {
             document.getElementById('overlay').style.display = 'none';
         }
+
+        function checkOverlap() {
+            const twitch = document.getElementById('twitchPlayer');
+            const streamplan = document.getElementById('streamplanImage');
+            const cards = document.querySelector('.album-grid');
+
+            if (!twitch || !streamplan || !cards) return;
+
+            const twitchRect = twitch.getBoundingClientRect();
+            const streamplanRect = streamplan.getBoundingClientRect();
+            const cardsRect = cards.getBoundingClientRect();
+
+            // Prüfen, ob der Twitch-Player oder das Streamplan-Bild die Karten überlappt
+            const overlapTwitch = twitchRect.right > cardsRect.left;
+            const overlapStreamplan = streamplanRect.left < cardsRect.right;
+
+            if (overlapTwitch || overlapStreamplan) {
+                twitch.classList.add('hidden');
+                streamplan.classList.add('hidden');
+            } else {
+                twitch.classList.remove('hidden');
+                streamplan.classList.remove('hidden');
+            }
+        }
+
+        // Automatisch überprüfen, wenn das Fenster skaliert oder verändert wird
+        window.addEventListener('resize', checkOverlap);
+        window.addEventListener('load', checkOverlap);
     </script>
+
 </body>
 </html>`);
     } catch (err) {
