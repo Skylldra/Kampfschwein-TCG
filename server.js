@@ -68,6 +68,7 @@ app.get('/:username', async (req, res) => {
 
         res.send(`<!DOCTYPE html>
         <html lang='de'>
+<html lang='de'>
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
@@ -89,29 +90,28 @@ app.get('/:username', async (req, res) => {
             background: rgba(255, 255, 255, 0.60);
             z-index: -1;
         }
-        
-        /* Twitch-Player dynamisch anpassen */
-.twitch-wrapper {
-    position: fixed;
-    left: 20px; /* Immer am linken Rand */
-    top: 50%;
-    transform: translateY(-50%);
-    width: min(35vw, 700px); /* Maximale Breite: 35% des Bildschirms oder 700px */
-    height: calc(min(35vw, 700px) * 0.5625); /* Höhe im 16:9 Format basierend auf der Breite */
-    min-width: 320px; /* Mindestgröße, damit es nicht zu klein wird */
-    min-height: 180px; /* Mindesthöhe, damit es sichtbar bleibt */
-    max-height: 400px; /* Damit es nicht zu groß wird */
-    border-radius: 10px;
-    border: 3px solid #6016FF;
-    overflow: hidden;
-    z-index: 10;
-}
 
-/* Twitch Iframe passt sich immer an */
-.twitch-wrapper iframe {
-    width: 100%;
-    height: 100%;
-}
+        /* Twitch-Player immer optimal positioniert */
+        .twitch-wrapper {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: max(25vw, 500px); /* Nutzt den Platz optimal bis zu den Karten */
+            height: calc(max(25vw, 500px) * 0.5625); /* 16:9 Verhältnis */
+            max-width: 40vw; /* Verhindert, dass es zu groß wird */
+            max-height: 40vh; /* Anpassung an Viewport-Höhe */
+            border-radius: 10px;
+            border: 3px solid #6016FF;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        /* Twitch Iframe passt sich immer an */
+        .twitch-wrapper iframe {
+            width: 100%;
+            height: 100%;
+        }
 
         .album-title { 
             font-size: 2.5em; 
@@ -172,7 +172,7 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <!-- Twitch Livestream Container (noch größer, besser sichtbar) -->
+    <!-- Twitch Livestream Container -->
     <div class="twitch-wrapper">
         <iframe 
             src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
