@@ -78,6 +78,8 @@ app.get('/:username', async (req, res) => {
             text-align: center; 
             background: url('/background.png') no-repeat center center fixed; 
             background-size: cover;
+            margin: 0;
+            padding: 0;
         }
         body::after {
             content: "";
@@ -89,55 +91,26 @@ app.get('/:username', async (req, res) => {
             background: rgba(255, 255, 255, 0.60);
             z-index: -1;
         }
-
         .album-title { 
             font-size: 2.5em; 
             margin-bottom: 20px; 
             color: white; 
             text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF, 0 0 20px #6016FF; 
         }
-
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
         .album-grid { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
             gap: 20px; 
             justify-content: center; 
             max-width: 900px; 
+            margin: auto; 
         }
-
-        /* Dynamischer Twitch-Player */
-        .twitch-wrapper {
-            position: relative;
-            width: 800px;
-            max-width: 40vw; /* Passt sich an den Bildschirm an */
-            height: 450px;
-            max-height: 22vw; /* Dynamische Höhe */
-            border-radius: 10px;
-            border: 3px solid #6016FF;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .twitch-wrapper iframe {
-            width: 100%;
-            height: 100%;
-        }
-
         .card-container { 
             text-align: center; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
         }
-
         .card-container p { 
             background: white; 
             border: 2px solid #6016FF;
@@ -149,14 +122,8 @@ app.get('/:username', async (req, res) => {
             display: flex;
             flex-direction: column;
         }
-
-        .card-img { 
-            width: 150px; 
-            height: 200px; 
-            transition: transform 0.2s ease-in-out; 
-        }
+        .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
         .card-img:hover { transform: scale(1.1); }
-
         #overlay { 
             position: fixed; 
             top: 0; 
@@ -168,60 +135,51 @@ app.get('/:username', async (req, res) => {
             align-items: center; 
             justify-content: center; 
         }
-
         #overlay-img { max-width: 80%; max-height: 80%; }
 
-        /* 📌 MEDIA QUERIES FÜR RESPONSIVE PLAYER 📌 */
+        /* Twitch-Player Fix am linken Rand */
+        .twitch-player {
+            position: fixed;
+            top: 50%;
+            left: 10px; /* Abstand zum linken Rand */
+            transform: translateY(-50%);
+            width: 400px; /* Maximale Breite */
+            max-width: 25vw; /* Dynamische Breite */
+            height: 225px; /* Maximale Höhe */
+            max-height: 30vh; /* Dynamische Höhe */
+            z-index: 10;
+        }
 
-        /* Wenn der Bildschirm unter 1400px breit ist, wird der Player kleiner */
-        @media (max-width: 1400px) {
-            .twitch-wrapper {
-                width: 600px;
-                height: 338px;
+        @media screen and (max-width: 1200px) {
+            .twitch-player {
+                width: 300px;
+                height: 170px;
             }
         }
 
-        /* Wenn der Bildschirm unter 1100px ist, wird der Player noch kleiner */
-        @media (max-width: 1100px) {
-            .twitch-wrapper {
-                width: 500px;
-                height: 280px;
+        @media screen and (max-width: 900px) {
+            .twitch-player {
+                display: none; /* Ausblenden auf sehr kleinen Bildschirmen */
             }
         }
-
-        /* Wenn der Bildschirm SEHR klein ist, wird der Player UNTER die Karten verschoben */
-        @media (max-width: 900px) {
-            .container {
-                flex-direction: column;
-                align-items: center;
-            }
-            .twitch-wrapper {
-                order: 2; /* Player kommt nach den Karten */
-                width: 90%;
-                height: auto;
-                max-height: 300px;
-            }
-        }
-
     </style>
 </head>
 <body>
-
     <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-
-    <div class="container">
-        <!-- Twitch Livestream -->
-        <div class="twitch-wrapper">
-            <iframe 
-                src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
-                frameborder="0" 
-                allowfullscreen="true" 
-                scrolling="no">
-            </iframe>
-        </div>
-
-        <div class='album-grid'>${albumHtml}</div>
+    
+    <!-- Twitch Livestream Player -->
+    <div class="twitch-player">
+        <iframe
+            src="https://player.twitch.tv/?channel=kampfschwein90&parent=${location.hostname}"
+            frameborder="0"
+            allowfullscreen
+            scrolling="no"
+            width="100%"
+            height="100%">
+        </iframe>
     </div>
+
+    <div class='album-grid'>${albumHtml}</div>
 
     <div id='overlay' onclick='closeEnlarged()'>
         <img id='overlay-img'>
@@ -237,7 +195,6 @@ app.get('/:username', async (req, res) => {
             document.getElementById('overlay').style.display = 'none';
         }
     </script>
-
 </body>
 </html>`);
     } catch (err) {
