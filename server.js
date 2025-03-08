@@ -90,18 +90,18 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player nochmal größer */
+        /* Dynamischer Twitch-Player */
         .twitch-wrapper {
             position: fixed;
-            left: 20px; /* Abstand zum linken Rand */
+            left: 10px; /* Abstand zum linken Rand */
             top: 50%;
             transform: translateY(-50%);
-            width: 800px; /* Noch größere Breite */
-            height: 450px; /* Noch größere Höhe */
+            width: min(35vw, 900px); /* Dynamische Breite: 35% des Bildschirms, max. 900px */
+            height: min(25vw, 500px); /* Dynamische Höhe: 25% des Bildschirms, max. 500px */
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
-            z-index: 10; /* Damit der Player über dem Hintergrund bleibt */
+            z-index: 10; /* Über Hintergrund, aber hinter Karten */
         }
         .twitch-wrapper iframe {
             width: 100%;
@@ -167,7 +167,7 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <!-- Twitch Livestream Container (noch größer, besser sichtbar) -->
+    <!-- Twitch Livestream Container (dynamisch angepasst) -->
     <div class="twitch-wrapper">
         <iframe 
             src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
