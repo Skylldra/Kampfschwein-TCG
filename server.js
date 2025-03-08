@@ -62,15 +62,49 @@ app.get('/:username', async (req, res) => {
             <meta name='viewport' content='width=device-width, initial-scale=1.0'>
             <title>Schweinchen-Sammelalbum von ${username}</title>
             <style>
-                body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f8f8; }
-                .album-title { font-size: 2em; margin-bottom: 20px; }
-                .album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; justify-content: center; max-width: 900px; margin: auto; }
-                .card-container { text-align: center; cursor: pointer; }
-                .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
-                .card-img:hover { transform: scale(1.1); }
-                #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; align-items: center; justify-content: center; }
-                #overlay-img { max-width: 80%; max-height: 80%; }
-            </style>
+    body { 
+        font-family: Arial, sans-serif; 
+        text-align: center; 
+        background: url('/background.png') no-repeat center center fixed; 
+        background-size: cover;
+    }
+
+    body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.25); /* 25% Transparenz */
+        z-index: -1;
+    }
+
+    .album-title { font-size: 2em; margin-bottom: 20px; }
+    .album-grid { 
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 20px; 
+        justify-content: center; 
+        max-width: 900px; 
+        margin: auto; 
+    }
+    .card-container { text-align: center; cursor: pointer; }
+    .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
+    .card-img:hover { transform: scale(1.1); }
+    #overlay { 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0, 0, 0, 0.8); 
+        display: none; 
+        align-items: center; 
+        justify-content: center; 
+    }
+    #overlay-img { max-width: 80%; max-height: 80%; }
+</style>
         </head>
         <body>
             <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
