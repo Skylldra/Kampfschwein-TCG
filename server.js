@@ -107,7 +107,7 @@ app.get('/:username', async (req, res) => {
             align-items: center;
             justify-content: center;
             background: black;
-            transition: all 0.3s ease-in-out; /* Sanfte Größenanpassung */
+            transition: opacity 0.3s ease-in-out, width 0.3s ease-in-out, height 0.3s ease-in-out;
         }
 
         /* Twitch-Player links */
@@ -155,7 +155,7 @@ app.get('/:username', async (req, res) => {
             }
         }
 
-        /* Falls trotzdem kein Platz ist → ausblenden */
+        /* Verstecken, aber Originalgröße behalten */
         .hidden {
             opacity: 0;
             pointer-events: none;
@@ -264,25 +264,33 @@ app.get('/:username', async (req, res) => {
             const streamplanRect = streamplan.getBoundingClientRect();
             const cardsRect = cards.getBoundingClientRect();
 
-            // Falls Player oder Streamplan überlappt, zuerst verkleinern
-            if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
-                twitch.style.width = "12vw";
-                twitch.style.height = "calc(12vw * 0.5625)";
-                streamplan.style.width = "12vw";
-                streamplan.style.height = "calc(12vw * 0.5625)";
+            // Falls Überlappung → verkleinern
+            let newSize = 20;
+
+            while ((twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) && newSize > 10) {
+                newSize -= 2;
+                twitch.style.width = `${newSize}vw`;
+                twitch.style.height = `calc(${newSize}vw * 0.5625)`;
+                streamplan.style.width = `${newSize}vw`;
+                streamplan.style.height = `calc(${newSize}vw * 0.5625)`;
             }
 
-            // Falls immer noch überlappt → verstecken
+            // Falls es komplett überlappt, ausblenden
             if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
                 twitch.classList.add('hidden');
                 streamplan.classList.add('hidden');
             } else {
                 twitch.classList.remove('hidden');
                 streamplan.classList.remove('hidden');
+                // Zurücksetzen auf normale Größe
+                twitch.style.width = "20vw";
+                twitch.style.height = "calc(20vw * 0.5625)";
+                streamplan.style.width = "20vw";
+                streamplan.style.height = "calc(20vw * 0.5625)";
             }
         }
 
-        // Automatisch überprüfen, wenn das Fenster skaliert oder verändert wird
+        // Automatische Größenanpassung bei Änderungen
         window.addEventListener('resize', checkOverlap);
         window.addEventListener('load', checkOverlap);
     </script>
