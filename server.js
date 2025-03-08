@@ -40,7 +40,7 @@ app.get('/:username', async (req, res) => {
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
     try {
-        const result = await pool.query("SELECT card_name, obtained_date FROM user_cards WHERE username = $1", [username]);
+        const result = await pool.query("SELECT card_name, obtained_date FROM user_cards WHERE username = $1 AND LOWER(username = $1)", [username]);
         const ownedCards = new Map(result.rows.map(row => [row.card_name, formatDate(row.obtained_date)]));
         
         const albumHtml = cards.map((card, index) => {
