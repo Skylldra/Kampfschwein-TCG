@@ -41,15 +41,25 @@ app.get('/:username', async (req, res) => {
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
     try {
-        const result = await pool.query("SELECT card_name, obtained_date FROM user_cards WHERE username = $1 OR LOWER(username) = LOWER($1);", [username]);
-        const ownedCards = new Map(result.rows.map(row => [row.card_name, formatDate(row.obtained_date)]));
+        const result = await pool.query(`
+            SELECT card_name, COUNT(*) AS count, MIN(obtained_date) AS first_obtained 
+            FROM user_cards 
+            WHERE username = $1 OR LOWER(username) = LOWER($1) 
+            GROUP BY card_name
+        `, [username]);
+
+        const ownedCards = new Map(result.rows.map(row => [row.card_name, { count: row.count, date: formatDate(row.first_obtained) }]));
 
         const albumHtml = cards.map((card, index) => {
             const cardNumber = String(index + 1).padStart(2, '0');
             const isOwned = ownedCards.has(card);
             const imgExt = isOwned ? 'png' : 'jpg';
             const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.${imgExt}`;
-            const displayText = isOwned ? `${card} ${cardNumber}/${totalCards}<br>${ownedCards.get(card)}` : `??? ${cardNumber}/${totalCards}`;
+
+            const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
+            const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
+            const displayText = isOwned ? `${countText}${card} ${cardNumber}/${totalCards}${dateText}` : `??? ${cardNumber}/${totalCards}`;
+
             return `<div class='card-container' onclick='enlargeCard(this)'>
                         <img src='${imgSrc}' class='card-img'>
                         <p>${displayText}</p>
@@ -76,10 +86,9 @@ app.get('/:username', async (req, res) => {
                     left: 0;
                     width: 100%;
                     height: 100%;
-                    background: rgba(255, 255, 255, 0.60); /* 60% Transparenz */
+                    background: rgba(255, 255, 255, 0.60);
                     z-index: -1;
                 }
-
                 .album-title { 
                     font-size: 2.5em; 
                     margin-bottom: 20px; 
@@ -95,24 +104,22 @@ app.get('/:username', async (req, res) => {
                     margin: auto; 
                 }
                 .card-container { 
-    text-align: center; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-}
-
-.card-container p { 
-    background: white; 
-    border: 2px solid #6016FF;
-    padding: 5px;
-    margin-top: 5px;
-    width: fit-content;
-    font-weight: bold;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-}
-
+                    text-align: center; 
+                    display: flex; 
+                    flex-direction: column; 
+                    align-items: center; 
+                }
+                .card-container p { 
+                    background: white; 
+                    border: 2px solid #6016FF;
+                    padding: 5px;
+                    margin-top: 5px;
+                    width: fit-content;
+                    font-weight: bold;
+                    text-align: center;
+                    display: flex;
+                    flex-direction: column;
+                }
                 .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
                 .card-img:hover { transform: scale(1.1); }
                 #overlay { 
