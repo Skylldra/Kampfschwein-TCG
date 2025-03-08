@@ -18,9 +18,9 @@ app.use(express.static(path.join(__dirname))); // Macht background.png verfügba
 
 // Kartenpool mit Index für Nummerierung
 const cards = [
-    "Officer Schwein", "Vampir Schwein", "Ritter Schwein", "Zauberer Schwein",
-    "Cyber Schwein", "Ninja Schwein", "Piraten Schwein", "Alien Schwein",
-    "Zombie Schwein", "Geister Schwein", "Gladiator Schwein", "Samurai Schwein"
+    "Vampirschwein", "Astronautenschwein", "Officer Schwein", "König Schweinchen",
+    "Truckerschwein", "Doktor Schwein", "Captain Schweinchen", "Magierschwein",
+    "Boss Schwein", "Feuerwehr Schwein", "Alien Schwein", "Zukunt Schwein mit Käsekuchen"
 ];
 const totalCards = cards.length;
 
@@ -95,24 +95,23 @@ app.get('/:username', async (req, res) => {
                     margin: auto; 
                 }
                 .card-container { 
-    text-align: center; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-}
+                    text-align: center; 
+                    display: flex; 
+                    flex-direction: column; 
+                    align-items: center; 
+                }
 
-.card-container p { 
-    background: white; 
-    border: 2px solid #6016FF;
-    padding: 5px;
-    margin-top: 5px;
-    width: fit-content;
-    font-weight: bold;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-}
-
+                .card-container p { 
+                    background: white; 
+                    border: 2px solid #6016FF;
+                    padding: 5px;
+                    margin-top: 5px;
+                    width: fit-content;
+                    font-weight: bold;
+                    text-align: center;
+                    display: flex;
+                    flex-direction: column;
+                }
                 .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
                 .card-img:hover { transform: scale(1.1); }
                 #overlay { 
