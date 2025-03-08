@@ -164,21 +164,49 @@ app.get('/random/:username', async (req, res) => {
     const username = req.params.username;
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
-    // Wahrscheinlichkeit für "Zukunft Schwein" reduzieren
-    const weightedCards = [...cards, ...cards, ...cards, ...cards, ...cards]; // 5x mehr normale Karten
-    weightedCards.push(cards[cards.length - 1]); // 1x Zukunft Schwein (seltener)
+    // Karten mit individuellen Wahrscheinlichkeiten
+    const probabilities = [
+        { card: "Vampirschwein", weight: 15 },
+        { card: "Astronautenschwein", weight: 15 },
+        { card: "Officer Schwein", weight: 15 },
+        { card: "König Schweinchen", weight: 15 },
+        { card: "Truckerschwein", weight: 15 },
+        { card: "Doktor Schwein", weight: 15 },
+        { card: "Captain Schweinchen", weight: 15 },
+        { card: "Magierschwein", weight: 15 },
+        { card: "Boss Schwein", weight: 15 },
+        { card: "Feuerwehr Schwein", weight: 15 },
+        { card: "Alien Schwein", weight: 15 },
+        { card: "Zukunft Schwein", weight: 5 } // Seltene Karte
+    ];
 
-    const randomIndex = Math.floor(Math.random() * weightedCards.length);
-    const card = weightedCards[randomIndex];
-    const cardNumber = String(cards.indexOf(card) + 1).padStart(2, '0');
+    // 1️⃣ Gesamtgewicht berechnen (Summe aller Wahrscheinlichkeiten)
+    const totalWeight = probabilities.reduce((sum, item) => sum + item.weight, 0);
+
+    // 2️⃣ Gewichtete Auswahl treffen
+    let threshold = Math.random() * totalWeight; // Zufallszahl innerhalb des Gesamtgewichts
+    let selectedCard = null;
+
+    for (let item of probabilities) {
+        threshold -= item.weight;
+        if (threshold <= 0) {
+            selectedCard = item.card;
+            break;
+        }
+    }
+
+    // 3️⃣ Sicherstellen, dass eine Karte gewählt wurde
+    if (!selectedCard) selectedCard = probabilities[0].card;
+
+    const cardNumber = String(cards.indexOf(selectedCard) + 1).padStart(2, '0');
     const date = new Date().toISOString().split('T')[0];
 
     try {
         await pool.query(
             "INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)",
-            [username, card, date]
+            [username, selectedCard, date]
         );
-        res.send(`${card} ${cardNumber}/${totalCards}`);
+        res.send(`${selectedCard} ${cardNumber}/${totalCards}`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Speichern der Karte");
