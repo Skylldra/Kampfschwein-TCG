@@ -118,6 +118,13 @@ app.get('/:username', async (req, res) => {
             height: 100%;
         }
 
+        /* Automatische Ausblendung auf mobilen Geräten */
+        @media (max-width: 800px) {
+            .twitch-wrapper, .streamplan-wrapper {
+                display: none;
+            }
+        }
+
         .album-title { 
             font-size: 2.5em; 
             margin-bottom: 20px; 
@@ -125,6 +132,7 @@ app.get('/:username', async (req, res) => {
             text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF, 0 0 20px #6016FF; 
         }
 
+        /* Karten-Anordnung für PC */
         .album-grid { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
@@ -132,6 +140,14 @@ app.get('/:username', async (req, res) => {
             justify-content: center; 
             max-width: 900px; 
             margin: auto; 
+        }
+
+        /* Karten-Anordnung für Handy (2 Karten pro Reihe) */
+        @media (max-width: 800px) {
+            .album-grid {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 600px;
+            }
         }
 
         .card-container { 
@@ -174,7 +190,7 @@ app.get('/:username', async (req, res) => {
 
         #overlay-img { max-width: 80%; max-height: 80%; }
 
-        /* Developer Box unten links */
+        /* Developer Box bleibt gleich groß */
         .dev-box {
             position: fixed;
             bottom: 20px;
@@ -188,6 +204,8 @@ app.get('/:username', async (req, res) => {
             cursor: pointer;
             border: 2px solid #6016FF;
             transition: background 0.3s ease-in-out;
+            width: auto;
+            white-space: nowrap;
         }
 
         .dev-box:hover {
@@ -279,8 +297,7 @@ app.get('/:username', async (req, res) => {
     </script>
 
 </body>
-</html>
-`);
+</html>`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
