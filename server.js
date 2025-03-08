@@ -94,22 +94,21 @@ app.get('/:username', async (req, res) => {
                     max-width: 900px; 
                     margin: auto; 
                 }
-                .card-container p { 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+                .card-container { 
+    text-align: center; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+
+.card-container p { 
     background: white; 
     border: 2px solid #6016FF;
     padding: 5px;
     margin-top: 5px;
     width: fit-content;
     font-weight: bold;
-    min-width: 120px;
-}
-
-.card-container p span {
-    display: block;
+    text-align: center;
 }
 
                 .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
