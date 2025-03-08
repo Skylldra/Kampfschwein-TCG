@@ -90,17 +90,16 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player dynamisch anpassen */
+        /* Twitch-Player bleibt groß, wird aber bei Zoom automatisch kleiner */
         .twitch-wrapper {
             position: fixed;
-            left: 20px; /* Immer am linken Rand */
+            left: 20px;
             top: 50%;
             transform: translateY(-50%);
-            width: min(40vw, 720px); /* Maximale Breite: 40% des Bildschirms oder 720px */
-            height: calc(min(40vw, 720px) * 0.5625); /* Höhe im 16:9 Format */
+            width: min(35vw, 700px); /* Nutzt den Platz optimal, aber max. 700px */
+            height: calc(min(35vw, 700px) * 0.5625); /* 16:9 Verhältnis */
             min-width: 320px; /* Mindestbreite */
             min-height: 180px; /* Mindesthöhe */
-            max-height: 450px; /* Maximale Höhe */
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
@@ -113,23 +112,29 @@ app.get('/:username', async (req, res) => {
             height: 100%;
         }
 
-        /* Dynamische Anpassung, falls Zoom > 125% */
+        /* Dynamische Anpassung für höhere Zoomstufen oder kleinere Bildschirme */
         @media (max-width: 1200px) {
             .twitch-wrapper {
-                width: min(35vw, 600px);
-                height: calc(min(35vw, 600px) * 0.5625);
+                width: min(30vw, 600px);
+                height: calc(min(30vw, 600px) * 0.5625);
             }
         }
         @media (max-width: 1000px) {
             .twitch-wrapper {
-                width: min(30vw, 500px);
-                height: calc(min(30vw, 500px) * 0.5625);
+                width: min(28vw, 500px);
+                height: calc(min(28vw, 500px) * 0.5625);
             }
         }
         @media (max-width: 800px) {
             .twitch-wrapper {
                 width: min(25vw, 400px);
                 height: calc(min(25vw, 400px) * 0.5625);
+            }
+        }
+        @media (max-width: 600px) {
+            .twitch-wrapper {
+                width: min(22vw, 350px);
+                height: calc(min(22vw, 350px) * 0.5625);
             }
         }
 
@@ -192,7 +197,7 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <!-- Twitch Livestream Container (automatisch angepasst) -->
+    <!-- Twitch Livestream Container -->
     <div class="twitch-wrapper">
         <iframe 
             src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
