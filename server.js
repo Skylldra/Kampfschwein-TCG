@@ -220,63 +220,15 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <!-- Stream-Infos (Titel & Spiel) über dem Player -->
-<div class="stream-info" id="streamInfo">
-    <span id="streamTitle">Lädt Stream-Informationen...</span><br>
-    <span id="streamGame"></span>
-</div>
-
-<!-- Twitch Livestream links -->
-<div class="twitch-wrapper" id="twitchPlayer">
-    <iframe 
-        src="https://player.twitch.tv/?channel=zarbex&parent=kampfschwein-tcg.onrender.com" 
-        frameborder="0" 
-        allowfullscreen="true" 
-        scrolling="no">
-    </iframe>
-</div>
-
-<!-- Twitch Live-Chat unter dem Player -->
-<div class="twitch-chat-wrapper">
-    <iframe 
-        src="https://www.twitch.tv/embed/zarbex/chat?parent=kampfschwein-tcg.onrender.com" 
-        frameborder="0"
-        scrolling="no">
-    </iframe>
-</div>
-
-<style>
-    /* Stream-Info über dem Player */
-    .stream-info {
-        text-align: center;
-        font-size: 1em;
-        color: white;
-        text-shadow: 0 0 5px #6016FF;
-        margin-bottom: 10px;
-    }
-
-    /* Live-Chat unter dem Player */
-    .twitch-chat-wrapper {
-        position: fixed;
-        left: 20px;
-        bottom: 10px;
-        width: max(20vw, 400px);
-        height: 300px;
-        border-radius: 10px;
-        border: 3px solid #6016FF;
-        overflow: hidden;
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: black;
-    }
-
-    .twitch-chat-wrapper iframe {
-        width: 100%;
-        height: 100%;
-    }
-</style>
+    <!-- Twitch Livestream links -->
+    <div class="twitch-wrapper" id="twitchPlayer">
+        <iframe 
+            src="https://player.twitch.tv/?channel=zarbex&parent=kampfschwein-tcg.onrender.com" 
+            frameborder="0" 
+            allowfullscreen="true" 
+            scrolling="no">
+        </iframe>
+    </div>
 
     <!-- Streamplan rechts -->
     <div class="streamplan-wrapper" id="streamplanImage">
