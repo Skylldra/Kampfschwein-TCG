@@ -243,49 +243,59 @@ app.get('/:username', async (req, res) => {
     </div>
 
     <script>
-        function enlargeCard(card) {
-            const imgSrc = card.querySelector('img').src;
-            document.getElementById('overlay-img').src = imgSrc;
-            document.getElementById('overlay').style.display = 'flex';
+    function enlargeCard(card) {
+        const imgSrc = card.querySelector('img').src;
+        document.getElementById('overlay-img').src = imgSrc;
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    function closeEnlarged() {
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function checkOverlap() {
+        const twitch = document.getElementById('twitchPlayer');
+        const streamplan = document.getElementById('streamplanImage');
+        const cards = document.querySelector('.album-grid');
+
+        if (!twitch || !streamplan || !cards) return;
+
+        const twitchRect = twitch.getBoundingClientRect();
+        const streamplanRect = streamplan.getBoundingClientRect();
+        const cardsRect = cards.getBoundingClientRect();
+
+        // Ursprüngliche Größe speichern
+        const originalSize = "20vw";
+        const originalHeight = "calc(20vw * 0.5625)";
+
+        // Falls Player oder Streamplan überlappt, zuerst verkleinern
+        if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
+            twitch.style.width = "12vw";
+            twitch.style.height = "calc(12vw * 0.5625)";
+            streamplan.style.width = "12vw";
+            streamplan.style.height = "calc(12vw * 0.5625)";
         }
 
-        function closeEnlarged() {
-            document.getElementById('overlay').style.display = 'none';
+        // Falls immer noch überlappt → verstecken
+        if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
+            twitch.classList.add('hidden');
+            streamplan.classList.add('hidden');
+        } else {
+            twitch.classList.remove('hidden');
+            streamplan.classList.remove('hidden');
+
+            // Zurück zur Originalgröße
+            twitch.style.width = originalSize;
+            twitch.style.height = originalHeight;
+            streamplan.style.width = originalSize;
+            streamplan.style.height = originalHeight;
         }
+    }
 
-        function checkOverlap() {
-            const twitch = document.getElementById('twitchPlayer');
-            const streamplan = document.getElementById('streamplanImage');
-            const cards = document.querySelector('.album-grid');
-
-            if (!twitch || !streamplan || !cards) return;
-
-            const twitchRect = twitch.getBoundingClientRect();
-            const streamplanRect = streamplan.getBoundingClientRect();
-            const cardsRect = cards.getBoundingClientRect();
-
-            // Falls Player oder Streamplan überlappt, zuerst verkleinern
-            if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
-                twitch.style.width = "12vw";
-                twitch.style.height = "calc(12vw * 0.5625)";
-                streamplan.style.width = "12vw";
-                streamplan.style.height = "calc(12vw * 0.5625)";
-            }
-
-            // Falls immer noch überlappt → verstecken
-            if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
-                twitch.classList.add('hidden');
-                streamplan.classList.add('hidden');
-            } else {
-                twitch.classList.remove('hidden');
-                streamplan.classList.remove('hidden');
-            }
-        }
-
-        // Automatisch überprüfen, wenn das Fenster skaliert oder verändert wird
-        window.addEventListener('resize', checkOverlap);
-        window.addEventListener('load', checkOverlap);
-    </script>
+    // Automatisch überprüfen, wenn das Fenster skaliert oder verändert wird
+    window.addEventListener('resize', checkOverlap);
+    window.addEventListener('load', checkOverlap);
+</script>
 
 </body>
 </html>`);
