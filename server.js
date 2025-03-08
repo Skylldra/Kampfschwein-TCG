@@ -95,10 +95,10 @@ app.get('/:username', async (req, res) => {
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            width: max(25vw, 500px);
-            height: calc(max(25vw, 500px) * 0.5625);
-            max-width: 40vw;
-            max-height: 40vh;
+            width: max(20vw, 400px);
+            height: calc(max(20vw, 400px) * 0.5625);
+            max-width: 35vw;
+            max-height: 35vh;
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
@@ -107,7 +107,7 @@ app.get('/:username', async (req, res) => {
             align-items: center;
             justify-content: center;
             background: black;
-            transition: opacity 0.3s ease-in-out; /* Sanftes Ein-/Ausblenden */
+            transition: all 0.3s ease-in-out; /* Sanfte Größenanpassung */
         }
 
         /* Twitch-Player links */
@@ -133,7 +133,29 @@ app.get('/:username', async (req, res) => {
             object-fit: contain;
         }
 
-        /* Verstecken bei zu hoher Zoomstufe oder kleinem Bildschirm */
+        /* Dynamische Größenanpassung bei kleineren Bildschirmen */
+        @media (max-width: 1400px) {
+            .twitch-wrapper, .streamplan-wrapper {
+                width: 18vw;
+                height: calc(18vw * 0.5625);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .twitch-wrapper, .streamplan-wrapper {
+                width: 16vw;
+                height: calc(16vw * 0.5625);
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .twitch-wrapper, .streamplan-wrapper {
+                width: 14vw;
+                height: calc(14vw * 0.5625);
+            }
+        }
+
+        /* Falls trotzdem kein Platz ist → ausblenden */
         .hidden {
             opacity: 0;
             pointer-events: none;
@@ -242,11 +264,16 @@ app.get('/:username', async (req, res) => {
             const streamplanRect = streamplan.getBoundingClientRect();
             const cardsRect = cards.getBoundingClientRect();
 
-            // Prüfen, ob der Twitch-Player oder das Streamplan-Bild die Karten überlappt
-            const overlapTwitch = twitchRect.right > cardsRect.left;
-            const overlapStreamplan = streamplanRect.left < cardsRect.right;
+            // Falls Player oder Streamplan überlappt, zuerst verkleinern
+            if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
+                twitch.style.width = "12vw";
+                twitch.style.height = "calc(12vw * 0.5625)";
+                streamplan.style.width = "12vw";
+                streamplan.style.height = "calc(12vw * 0.5625)";
+            }
 
-            if (overlapTwitch || overlapStreamplan) {
+            // Falls immer noch überlappt → verstecken
+            if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
                 twitch.classList.add('hidden');
                 streamplan.classList.add('hidden');
             } else {
