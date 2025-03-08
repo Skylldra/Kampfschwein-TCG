@@ -133,37 +133,40 @@ app.get('/:username', async (req, res) => {
             object-fit: contain;
         }
 
-        /* Dynamische Größenanpassung für Handys */
+        /* Falls nach unten verschoben */
+        .moved-down {
+            position: absolute !important;
+            top: unset !important;
+            bottom: 20px !important;
+            transform: none !important;
+        }
+
+        /* Layout für Handys */
         @media (max-width: 800px) {
             .album-grid {
-                grid-template-columns: repeat(2, 1fr); /* Zwei Karten pro Reihe für bessere Sichtbarkeit */
+                grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
             }
 
             .card-img {
-                width: 120px; /* Kleinere Karten für bessere Übersicht */
+                width: 120px;
                 height: 160px;
             }
 
             .twitch-wrapper, .streamplan-wrapper {
-                position: static; /* Entfernt das "fixed" Verhalten auf Handys */
-                width: 80%;
+                position: absolute;
+                width: 40vw;
                 max-width: 300px;
-                height: calc(80% * 0.5625);
-                margin: 10px auto;
-                display: block;
+                height: calc(40vw * 0.5625);
             }
-        }
 
-        /* Falls trotzdem kein Platz ist → verschieben statt verstecken */
-        .hidden {
-            position: relative !important;
-            opacity: 1 !important;
-            pointer-events: auto !important;
-            width: 80% !important;
-            max-width: 300px !important;
-            margin: 20px auto !important;
-            display: block !important;
+            .twitch-wrapper {
+                left: 10px;
+            }
+
+            .streamplan-wrapper {
+                right: 10px;
+            }
         }
 
         .album-title { 
@@ -269,31 +272,13 @@ app.get('/:username', async (req, res) => {
         const streamplanRect = streamplan.getBoundingClientRect();
         const cardsRect = cards.getBoundingClientRect();
 
-        // Ursprüngliche Größe speichern
-        const originalSize = "20vw";
-        const originalHeight = "calc(20vw * 0.5625)";
-
-        // Falls Player oder Streamplan überlappt, zuerst verkleinern
+        // Falls Player oder Streamplan überlappt, nach unten verschieben, aber links/rechts behalten
         if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
-            twitch.style.width = "12vw";
-            twitch.style.height = "calc(12vw * 0.5625)";
-            streamplan.style.width = "12vw";
-            streamplan.style.height = "calc(12vw * 0.5625)";
-        }
-
-        // Falls immer noch überlappt → nach unten verschieben
-        if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
-            twitch.classList.add('hidden');
-            streamplan.classList.add('hidden');
+            twitch.classList.add('moved-down');
+            streamplan.classList.add('moved-down');
         } else {
-            twitch.classList.remove('hidden');
-            streamplan.classList.remove('hidden');
-
-            // Zurück zur Originalgröße
-            twitch.style.width = originalSize;
-            twitch.style.height = originalHeight;
-            streamplan.style.width = originalSize;
-            streamplan.style.height = originalHeight;
+            twitch.classList.remove('moved-down');
+            streamplan.classList.remove('moved-down');
         }
     }
 
