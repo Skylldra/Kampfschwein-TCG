@@ -155,6 +155,12 @@ app.get('/:username', async (req, res) => {
             }
         }
 
+        /* Falls trotzdem kein Platz ist → ausblenden */
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .album-title { 
             font-size: 2.5em; 
             margin-bottom: 20px; 
@@ -247,7 +253,7 @@ app.get('/:username', async (req, res) => {
             document.getElementById('overlay').style.display = 'none';
         }
 
-        function adjustSize() {
+        function checkOverlap() {
             const twitch = document.getElementById('twitchPlayer');
             const streamplan = document.getElementById('streamplanImage');
             const cards = document.querySelector('.album-grid');
@@ -258,25 +264,32 @@ app.get('/:username', async (req, res) => {
             const streamplanRect = streamplan.getBoundingClientRect();
             const cardsRect = cards.getBoundingClientRect();
 
-            let newSize = 20;
+            // Falls Player oder Streamplan überlappt, zuerst verkleinern
+            if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
+                twitch.style.width = "12vw";
+                twitch.style.height = "calc(12vw * 0.5625)";
+                streamplan.style.width = "12vw";
+                streamplan.style.height = "calc(12vw * 0.5625)";
+            }
 
-            // Falls Überlappung auftritt, Player und Bild weiter verkleinern
-            while ((twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) && newSize > 10) {
-                newSize -= 2;
-                twitch.style.width = `${newSize}vw`;
-                twitch.style.height = `calc(${newSize}vw * 0.5625)`;
-                streamplan.style.width = `${newSize}vw`;
-                streamplan.style.height = `calc(${newSize}vw * 0.5625)`;
+            // Falls immer noch überlappt → verstecken
+            if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
+                twitch.classList.add('hidden');
+                streamplan.classList.add('hidden');
+            } else {
+                twitch.classList.remove('hidden');
+                streamplan.classList.remove('hidden');
             }
         }
 
         // Automatisch überprüfen, wenn das Fenster skaliert oder verändert wird
-        window.addEventListener('resize', adjustSize);
-        window.addEventListener('load', adjustSize);
+        window.addEventListener('resize', checkOverlap);
+        window.addEventListener('load', checkOverlap);
     </script>
 
 </body>
-</html>`);
+</html>
+`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
