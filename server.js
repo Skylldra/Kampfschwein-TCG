@@ -68,7 +68,6 @@ app.get('/:username', async (req, res) => {
 
         res.send(`<!DOCTYPE html>
         <html lang='de'>
-<html lang='de'>
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
@@ -79,9 +78,6 @@ app.get('/:username', async (req, res) => {
             text-align: center; 
             background: url('/background.png') no-repeat center center fixed; 
             background-size: cover;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
         body::after {
             content: "";
@@ -93,20 +89,15 @@ app.get('/:username', async (req, res) => {
             background: rgba(255, 255, 255, 0.60);
             z-index: -1;
         }
-        .album-title { 
-            font-size: 2.5em; 
-            margin-bottom: 20px; 
-            color: white; 
-            text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF, 0 0 20px #6016FF; 
-        }
-        
-        /* Neuer Container für den Twitch-Stream */
+
+        /* Twitch-Player links am Rand fixiert */
         .twitch-wrapper {
             position: fixed;
-            left: 10px;
-            top: 50px;
-            width: 300px;
-            height: 169px;
+            left: 20px; /* Abstand zum linken Bildschirmrand */
+            top: 50%;
+            transform: translateY(-50%); /* Zentrieren */
+            width: 350px;
+            height: 200px;
             border-radius: 10px;
             border: 2px solid #6016FF;
             overflow: hidden;
@@ -117,12 +108,11 @@ app.get('/:username', async (req, res) => {
             height: 100%;
         }
 
-        /* Layout für das Album */
-        .content-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-left: 320px; /* Platz für Twitch-Stream reservieren */
+        .album-title { 
+            font-size: 2.5em; 
+            margin-bottom: 20px; 
+            color: white; 
+            text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF, 0 0 20px #6016FF; 
         }
 
         .album-grid { 
@@ -131,13 +121,16 @@ app.get('/:username', async (req, res) => {
             gap: 20px; 
             justify-content: center; 
             max-width: 900px; 
+            margin: auto; 
         }
+
         .card-container { 
             text-align: center; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
         }
+
         .card-container p { 
             background: white; 
             border: 2px solid #6016FF;
@@ -149,8 +142,14 @@ app.get('/:username', async (req, res) => {
             display: flex;
             flex-direction: column;
         }
-        .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
+
+        .card-img { 
+            width: 150px; 
+            height: 200px; 
+            transition: transform 0.2s ease-in-out; 
+        }
         .card-img:hover { transform: scale(1.1); }
+
         #overlay { 
             position: fixed; 
             top: 0; 
@@ -162,11 +161,13 @@ app.get('/:username', async (req, res) => {
             align-items: center; 
             justify-content: center; 
         }
+
         #overlay-img { max-width: 80%; max-height: 80%; }
     </style>
 </head>
 <body>
-    <!-- Twitch Livestream Container (Fest am linken Rand) -->
+
+    <!-- Twitch Livestream Container (fixiert links) -->
     <div class="twitch-wrapper">
         <iframe 
             src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
@@ -176,10 +177,8 @@ app.get('/:username', async (req, res) => {
         </iframe>
     </div>
 
-    <div class="content-container">
-        <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-        <div class='album-grid'>${albumHtml}</div>
-    </div>
+    <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
+    <div class='album-grid'>${albumHtml}</div>
 
     <div id='overlay' onclick='closeEnlarged()'>
         <img id='overlay-img'>
