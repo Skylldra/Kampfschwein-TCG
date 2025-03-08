@@ -107,7 +107,7 @@ app.get('/:username', async (req, res) => {
             align-items: center;
             justify-content: center;
             background: black;
-            transition: opacity 0.3s ease-in-out, width 0.3s ease-in-out, height 0.3s ease-in-out;
+            transition: all 0.3s ease-in-out; /* Sanfte Größenanpassung */
         }
 
         /* Twitch-Player links */
@@ -155,7 +155,7 @@ app.get('/:username', async (req, res) => {
             }
         }
 
-        /* Verstecken, aber Originalgröße behalten */
+        /* Falls trotzdem kein Platz ist → ausblenden */
         .hidden {
             opacity: 0;
             pointer-events: none;
@@ -231,25 +231,12 @@ app.get('/:username', async (req, res) => {
     </div>
 
     <!-- Streamplan rechts -->
-<div class="streamplan-wrapper" id="streamplanImage">
-    <img src="/streamplan.png" alt="Streamplan">
-</div>
+    <div class="streamplan-wrapper" id="streamplanImage">
+        <img src="/streamplan.png" alt="Streamplan">
+    </div>
 
-<h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-res.send(`
-<!DOCTYPE html>
-<html lang='de'>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>Schweinchen-Sammelalbum von ${username}</title>
-</head>
-<body>
     <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-    <div class='album-grid'>${albumHtml || ''}</div>
-</body>
-</html>
-`);
+    <div class='album-grid'>${albumHtml}</div>
 
     <div id='overlay' onclick='closeEnlarged()'>
         <img id='overlay-img'>
@@ -277,33 +264,25 @@ res.send(`
             const streamplanRect = streamplan.getBoundingClientRect();
             const cardsRect = cards.getBoundingClientRect();
 
-            // Falls Überlappung → verkleinern
-            let newSize = 20;
-
-            while ((twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) && newSize > 10) {
-                newSize -= 2;
-                twitch.style.width = `${newSize}vw`;
-                twitch.style.height = `calc(${newSize}vw * 0.5625)`;
-                streamplan.style.width = `${newSize}vw`;
-                streamplan.style.height = `calc(${newSize}vw * 0.5625)`;
+            // Falls Player oder Streamplan überlappt, zuerst verkleinern
+            if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
+                twitch.style.width = "12vw";
+                twitch.style.height = "calc(12vw * 0.5625)";
+                streamplan.style.width = "12vw";
+                streamplan.style.height = "calc(12vw * 0.5625)";
             }
 
-            // Falls es komplett überlappt, ausblenden
+            // Falls immer noch überlappt → verstecken
             if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
                 twitch.classList.add('hidden');
                 streamplan.classList.add('hidden');
             } else {
                 twitch.classList.remove('hidden');
                 streamplan.classList.remove('hidden');
-                // Zurücksetzen auf normale Größe
-                twitch.style.width = "20vw";
-                twitch.style.height = "calc(20vw * 0.5625)";
-                streamplan.style.width = "20vw";
-                streamplan.style.height = "calc(20vw * 0.5625)";
             }
         }
 
-        // Automatische Größenanpassung bei Änderungen
+        // Automatisch überprüfen, wenn das Fenster skaliert oder verändert wird
         window.addEventListener('resize', checkOverlap);
         window.addEventListener('load', checkOverlap);
     </script>
