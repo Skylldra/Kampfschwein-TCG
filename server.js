@@ -89,27 +89,28 @@ app.get('/:username', async (req, res) => {
             background: rgba(255, 255, 255, 0.60);
             z-index: -1;
         }
-
-        /* Twitch-Player nochmal größer */
+        
         .twitch-wrapper {
     position: fixed;
-    left: 10px; /* Bleibt immer am linken Rand */
+    left: 10px; /* Immer am linken Rand */
     top: 50%;
     transform: translateY(-50%);
     
-    /* Dynamische Größe: Passt sich an Bildschirmbreite an, aber bleibt begrenzt */
-    width: min(25vw, 500px); /* Maximal 500px, aber max. 25% der Bildschirmbreite */
-    height: calc(width * 0.5625); /* Seitenverhältnis 16:9 */
+    /* Standardgröße, aber mit dynamischer Anpassung */
+    width: min(30vw, 500px); /* Standard: 500px, aber max. 30% der Bildschirmbreite */
+    height: min(17vw, 280px); /* Höhe im 16:9 Format, passt sich dynamisch an */
 
     border-radius: 10px;
     border: 3px solid #6016FF;
     overflow: hidden;
-    z-index: 10; /* Damit der Player über dem Hintergrund bleibt, aber NICHT die Karten */
+    z-index: 10; /* Bleibt im Vordergrund, überlappt aber keine Karten */
 }
-        .twitch-wrapper iframe {
-            width: 100%;
-            height: 100%;
-        }
+
+/* Stellt sicher, dass das Twitch-Video innerhalb der Box bleibt */
+.twitch-wrapper iframe {
+    width: 100%;
+    height: 100%;
+}
 
         .album-title { 
             font-size: 2.5em; 
