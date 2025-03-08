@@ -231,12 +231,12 @@ app.get('/:username', async (req, res) => {
     </div>
 
     <!-- Streamplan rechts -->
-    <div class="streamplan-wrapper" id="streamplanImage">
-        <img src="/streamplan.png" alt="Streamplan">
-    </div>
+<div class="streamplan-wrapper" id="streamplanImage">
+    <img src="/streamplan.png" alt="Streamplan">
+</div>
 
-    <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-    <div class='album-grid'>${albumHtml}</div>
+<h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
+<div class='album-grid'>${albumHtml || ''}</div> <!-- Verhindert Fehler, falls albumHtml null ist -->
 
     <div id='overlay' onclick='closeEnlarged()'>
         <img id='overlay-img'>
