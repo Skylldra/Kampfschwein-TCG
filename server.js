@@ -90,23 +90,24 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
         
-        /* Twitch-Player bleibt immer links und passt sich dynamisch an */
+        /* Twitch-Player dynamisch anpassen */
 .twitch-wrapper {
     position: fixed;
-    left: 20px; /* Abstand zum linken Rand */
+    left: 20px; /* Immer am linken Rand */
     top: 50%;
     transform: translateY(-50%);
-    width: min(30vw, 600px); /* Maximal 30% der Bildschirmbreite oder 600px, je nachdem, was kleiner ist */
-    height: min(17vw, 350px); /* Maximal 17% der Breite oder 350px, je nachdem, was kleiner ist */
-    min-width: 280px; /* Mindestbreite, damit es nicht zu klein wird */
-    min-height: 160px; /* Mindesthöhe für Lesbarkeit */
+    width: min(35vw, 700px); /* Maximale Breite: 35% des Bildschirms oder 700px */
+    height: calc(min(35vw, 700px) * 0.5625); /* Höhe im 16:9 Format basierend auf der Breite */
+    min-width: 320px; /* Mindestgröße, damit es nicht zu klein wird */
+    min-height: 180px; /* Mindesthöhe, damit es sichtbar bleibt */
+    max-height: 400px; /* Damit es nicht zu groß wird */
     border-radius: 10px;
     border: 3px solid #6016FF;
     overflow: hidden;
     z-index: 10;
 }
 
-/* Das Iframe des Twitch-Players soll sich vollständig anpassen */
+/* Twitch Iframe passt sich immer an */
 .twitch-wrapper iframe {
     width: 100%;
     height: 100%;
