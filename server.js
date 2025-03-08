@@ -68,6 +68,7 @@ app.get('/:username', async (req, res) => {
                     text-align: center; 
                     background: url('/background.png') no-repeat center center fixed; 
                     background-size: cover;
+                    background-position: 20% center; /* Verschiebt das Bild nach rechts */
                 }
                 body::after {
                     content: "";
