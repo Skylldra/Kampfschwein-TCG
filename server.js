@@ -80,7 +80,12 @@ app.get('/:username', async (req, res) => {
                     z-index: -1;
                 }
 
-                .album-title { font-size: 2em; margin-bottom: 20px; }
+                .album-title { 
+                    font-size: 2.5em; 
+                    margin-bottom: 20px; 
+                    color: white; 
+                    text-shadow: 0 0 5px #c200ff, 0 0 10px #c200ff, 0 0 20px #a000cc; 
+                }
                 .album-grid { 
                     display: grid; 
                     grid-template-columns: repeat(3, 1fr); 
