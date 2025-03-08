@@ -90,16 +90,7 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        .top-container {
-            display: none;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 1200px;
-            margin: auto;
-            padding: 10px;
-        }
-
+        /* Twitch-Player & Streamplan */
         .twitch-wrapper, .streamplan-wrapper {
             position: fixed;
             top: 50%;
@@ -119,13 +110,8 @@ app.get('/:username', async (req, res) => {
             transition: all 0.3s ease-in-out;
         }
 
-        .twitch-wrapper {
-            left: 20px;
-        }
-
-        .streamplan-wrapper {
-            right: 20px;
-        }
+        .twitch-wrapper { left: 20px; }
+        .streamplan-wrapper { right: 20px; }
 
         .twitch-wrapper iframe, .streamplan-wrapper img {
             width: 100%;
@@ -146,10 +132,6 @@ app.get('/:username', async (req, res) => {
             justify-content: center; 
             max-width: 900px; 
             margin: auto; 
-        }
-
-        .hidden {
-            display: none;
         }
 
         .card-container { 
@@ -191,25 +173,31 @@ app.get('/:username', async (req, res) => {
         }
 
         #overlay-img { max-width: 80%; max-height: 80%; }
+
+        /* Developer Box unten links */
+        .dev-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid #6016FF;
+            transition: background 0.3s ease-in-out;
+        }
+
+        .dev-box:hover {
+            background: #6016FF;
+        }
     </style>
 </head>
 <body>
 
-    <div class="top-container" id="topContainer">
-        <div class="twitch-wrapper" id="twitchPlayerTop">
-            <iframe 
-                src="https://player.twitch.tv/?channel=zarbex&parent=kampfschwein-tcg.onrender.com" 
-                frameborder="0" 
-                allowfullscreen="true" 
-                scrolling="no">
-            </iframe>
-        </div>
-
-        <div class="streamplan-wrapper" id="streamplanImageTop">
-            <img src="/streamplan.png" alt="Streamplan">
-        </div>
-    </div>
-
+    <!-- Twitch Livestream links -->
     <div class="twitch-wrapper" id="twitchPlayer">
         <iframe 
             src="https://player.twitch.tv/?channel=zarbex&parent=kampfschwein-tcg.onrender.com" 
@@ -219,6 +207,7 @@ app.get('/:username', async (req, res) => {
         </iframe>
     </div>
 
+    <!-- Streamplan rechts -->
     <div class="streamplan-wrapper" id="streamplanImage">
         <img src="/streamplan.png" alt="Streamplan">
     </div>
@@ -228,6 +217,11 @@ app.get('/:username', async (req, res) => {
 
     <div id='overlay' onclick='closeEnlarged()'>
         <img id='overlay-img'>
+    </div>
+
+    <!-- Developer Box unten links -->
+    <div class="dev-box" onclick="window.open('https://www.twitch.tv/x_MeduZa_', '_blank')">
+        Developer: x_MeduZa_
     </div>
 
     <script>
@@ -246,37 +240,47 @@ app.get('/:username', async (req, res) => {
         const streamplan = document.getElementById('streamplanImage');
         const cards = document.querySelector('.album-grid');
 
-        const topContainer = document.getElementById('topContainer');
-        const twitchTop = document.getElementById('twitchPlayerTop');
-        const streamplanTop = document.getElementById('streamplanImageTop');
-
-        if (!twitch || !streamplan || !cards || !topContainer) return;
+        if (!twitch || !streamplan || !cards) return;
 
         const twitchRect = twitch.getBoundingClientRect();
         const streamplanRect = streamplan.getBoundingClientRect();
         const cardsRect = cards.getBoundingClientRect();
 
+        // Ursprüngliche Größe speichern
+        const originalSize = "20vw";
+        const originalHeight = "calc(20vw * 0.5625)";
+
+        // Falls Player oder Streamplan überlappt, zuerst verkleinern
+        if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
+            twitch.style.width = "12vw";
+            twitch.style.height = "calc(12vw * 0.5625)";
+            streamplan.style.width = "12vw";
+            streamplan.style.height = "calc(12vw * 0.5625)";
+        }
+
+        // Falls immer noch überlappt → verstecken
         if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
             twitch.classList.add('hidden');
             streamplan.classList.add('hidden');
-
-            twitchTop.innerHTML = twitch.innerHTML;
-            streamplanTop.innerHTML = streamplan.innerHTML;
-
-            topContainer.style.display = 'flex';
         } else {
             twitch.classList.remove('hidden');
             streamplan.classList.remove('hidden');
-            topContainer.style.display = 'none';
+
+            // Zurück zur Originalgröße
+            twitch.style.width = originalSize;
+            twitch.style.height = originalHeight;
+            streamplan.style.width = originalSize;
+            streamplan.style.height = originalHeight;
         }
     }
 
     window.addEventListener('resize', checkOverlap);
     window.addEventListener('load', checkOverlap);
-</script>
+    </script>
 
 </body>
-</html>`);
+</html>
+`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
