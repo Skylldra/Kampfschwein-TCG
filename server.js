@@ -107,7 +107,7 @@ app.get('/:username', async (req, res) => {
             align-items: center;
             justify-content: center;
             background: black;
-            transition: all 0.3s ease-in-out; /* Sanfte Größenanpassung */
+            transition: all 0.3s ease-in-out;
         }
 
         /* Twitch-Player links */
@@ -133,32 +133,37 @@ app.get('/:username', async (req, res) => {
             object-fit: contain;
         }
 
-        /* Dynamische Größenanpassung bei kleineren Bildschirmen */
-        @media (max-width: 1400px) {
+        /* Dynamische Größenanpassung für Handys */
+        @media (max-width: 800px) {
+            .album-grid {
+                grid-template-columns: repeat(2, 1fr); /* Zwei Karten pro Reihe für bessere Sichtbarkeit */
+                gap: 10px;
+            }
+
+            .card-img {
+                width: 120px; /* Kleinere Karten für bessere Übersicht */
+                height: 160px;
+            }
+
             .twitch-wrapper, .streamplan-wrapper {
-                width: 18vw;
-                height: calc(18vw * 0.5625);
+                position: static; /* Entfernt das "fixed" Verhalten auf Handys */
+                width: 80%;
+                max-width: 300px;
+                height: calc(80% * 0.5625);
+                margin: 10px auto;
+                display: block;
             }
         }
 
-        @media (max-width: 1200px) {
-            .twitch-wrapper, .streamplan-wrapper {
-                width: 16vw;
-                height: calc(16vw * 0.5625);
-            }
-        }
-
-        @media (max-width: 1000px) {
-            .twitch-wrapper, .streamplan-wrapper {
-                width: 14vw;
-                height: calc(14vw * 0.5625);
-            }
-        }
-
-        /* Falls trotzdem kein Platz ist → ausblenden */
+        /* Falls trotzdem kein Platz ist → verschieben statt verstecken */
         .hidden {
-            opacity: 0;
-            pointer-events: none;
+            position: relative !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            width: 80% !important;
+            max-width: 300px !important;
+            margin: 20px auto !important;
+            display: block !important;
         }
 
         .album-title { 
@@ -276,7 +281,7 @@ app.get('/:username', async (req, res) => {
             streamplan.style.height = "calc(12vw * 0.5625)";
         }
 
-        // Falls immer noch überlappt → verstecken
+        // Falls immer noch überlappt → nach unten verschieben
         if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
             twitch.classList.add('hidden');
             streamplan.classList.add('hidden');
@@ -292,7 +297,6 @@ app.get('/:username', async (req, res) => {
         }
     }
 
-    // Automatisch überprüfen, wenn das Fenster skaliert oder verändert wird
     window.addEventListener('resize', checkOverlap);
     window.addEventListener('load', checkOverlap);
 </script>
