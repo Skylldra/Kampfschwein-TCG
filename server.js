@@ -93,15 +93,18 @@ app.get('/:username', async (req, res) => {
         /* Twitch-Player nochmal größer */
         .twitch-wrapper {
     position: fixed;
-    left: 10px; /* Abstand zum linken Rand */
+    left: 10px; /* Bleibt immer am linken Rand */
     top: 50%;
     transform: translateY(-50%);
-    width: min(30vw, 700px); /* Maximal 700px, aber passt sich mit 30% der Bildschirmbreite an */
-    height: min(20vw, 400px); /* Maximal 400px, aber passt sich mit 20% der Bildschirmbreite an */
+    
+    /* Dynamische Größe: Passt sich an Bildschirmbreite an, aber bleibt begrenzt */
+    width: min(25vw, 500px); /* Maximal 500px, aber max. 25% der Bildschirmbreite */
+    height: calc(width * 0.5625); /* Seitenverhältnis 16:9 */
+
     border-radius: 10px;
     border: 3px solid #6016FF;
     overflow: hidden;
-    z-index: 10; /* Player bleibt hinter den Karten */
+    z-index: 10; /* Damit der Player über dem Hintergrund bleibt, aber NICHT die Karten */
 }
         .twitch-wrapper iframe {
             width: 100%;
