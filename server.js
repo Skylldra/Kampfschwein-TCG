@@ -221,7 +221,7 @@ app.get('/:username', async (req, res) => {
     <!-- Twitch Livestream links -->
     <div class="twitch-wrapper" id="twitchPlayer">
         <iframe 
-            src="https://player.twitch.tv/?channel=zarbex&parent=kampfschwein-tcg.onrender.com" 
+            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
             frameborder="0" 
             allowfullscreen="true" 
             scrolling="no">
