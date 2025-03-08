@@ -90,29 +90,19 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player nochmal größer */
-        .twitch-wrapper {
-            position: fixed;
-            left: 20px; /* Abstand zum linken Rand */
-            top: 50%;
-            transform: translateY(-50%);
-            width: 800px; /* Noch größere Breite */
-            height: 450px; /* Noch größere Höhe */
-            border-radius: 10px;
-            border: 3px solid #6016FF;
-            overflow: hidden;
-            z-index: 10; /* Damit der Player über dem Hintergrund bleibt */
-        }
-        .twitch-wrapper iframe {
-            width: 100%;
-            height: 100%;
-        }
-
         .album-title { 
             font-size: 2.5em; 
             margin-bottom: 20px; 
             color: white; 
             text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF, 0 0 20px #6016FF; 
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
         .album-grid { 
@@ -121,7 +111,24 @@ app.get('/:username', async (req, res) => {
             gap: 20px; 
             justify-content: center; 
             max-width: 900px; 
-            margin: auto; 
+        }
+
+        /* Dynamischer Twitch-Player */
+        .twitch-wrapper {
+            position: relative;
+            width: 800px;
+            max-width: 40vw; /* Passt sich an den Bildschirm an */
+            height: 450px;
+            max-height: 22vw; /* Dynamische Höhe */
+            border-radius: 10px;
+            border: 3px solid #6016FF;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .twitch-wrapper iframe {
+            width: 100%;
+            height: 100%;
         }
 
         .card-container { 
@@ -163,22 +170,58 @@ app.get('/:username', async (req, res) => {
         }
 
         #overlay-img { max-width: 80%; max-height: 80%; }
+
+        /* 📌 MEDIA QUERIES FÜR RESPONSIVE PLAYER 📌 */
+
+        /* Wenn der Bildschirm unter 1400px breit ist, wird der Player kleiner */
+        @media (max-width: 1400px) {
+            .twitch-wrapper {
+                width: 600px;
+                height: 338px;
+            }
+        }
+
+        /* Wenn der Bildschirm unter 1100px ist, wird der Player noch kleiner */
+        @media (max-width: 1100px) {
+            .twitch-wrapper {
+                width: 500px;
+                height: 280px;
+            }
+        }
+
+        /* Wenn der Bildschirm SEHR klein ist, wird der Player UNTER die Karten verschoben */
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .twitch-wrapper {
+                order: 2; /* Player kommt nach den Karten */
+                width: 90%;
+                height: auto;
+                max-height: 300px;
+            }
+        }
+
     </style>
 </head>
 <body>
 
-    <!-- Twitch Livestream Container (noch größer, besser sichtbar) -->
-    <div class="twitch-wrapper">
-        <iframe 
-            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
-            frameborder="0" 
-            allowfullscreen="true" 
-            scrolling="no">
-        </iframe>
-    </div>
-
     <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-    <div class='album-grid'>${albumHtml}</div>
+
+    <div class="container">
+        <!-- Twitch Livestream -->
+        <div class="twitch-wrapper">
+            <iframe 
+                src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
+                frameborder="0" 
+                allowfullscreen="true" 
+                scrolling="no">
+            </iframe>
+        </div>
+
+        <div class='album-grid'>${albumHtml}</div>
+    </div>
 
     <div id='overlay' onclick='closeEnlarged()'>
         <img id='overlay-img'>
@@ -194,6 +237,7 @@ app.get('/:username', async (req, res) => {
             document.getElementById('overlay').style.display = 'none';
         }
     </script>
+
 </body>
 </html>`);
     } catch (err) {
