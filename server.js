@@ -96,18 +96,10 @@ app.get('/:username', async (req, res) => {
     }
 });
 
-// Zufällige Karte ziehen (Funktioniert für Streamlabs & Mix It Up)
-app.get(['/random/:username', '/random'], async (req, res) => {
-    let username = req.params.username || req.query.username;
-    if (!username || username.trim() === "") {
-        return res.status(400).send("Fehlender oder ungültiger Benutzername");
-    }
-
-    username = username.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase().trim();
-
-    if (username.length === 0) {
-        return res.status(400).send("Ungültiger Benutzername nach Bereinigung.");
-    }
+// Zufällige Karte ziehen
+app.get('/random/:username', async (req, res) => {
+    const username = req.params.username;
+    if (!username) return res.status(400).send("Fehlender Benutzername");
 
     const randomIndex = Math.floor(Math.random() * totalCards);
     const card = cards[randomIndex];
@@ -116,12 +108,12 @@ app.get(['/random/:username', '/random'], async (req, res) => {
 
     try {
         await pool.query(
-            "INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3) ON CONFLICT (username, card_name) DO UPDATE SET obtained_date = EXCLUDED.obtained_date",
+            "INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)",
             [username, card, date]
         );
         res.send(`${card} ${cardNumber}/${totalCards}`);
     } catch (err) {
-        console.error("Fehler beim Speichern der Karte:", err);
+        console.error(err);
         res.status(500).send("Fehler beim Speichern der Karte");
     }
 });
