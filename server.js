@@ -90,26 +90,46 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player immer optimal positioniert */
-        .twitch-wrapper {
+        /* Twitch-Player links */
+        .twitch-wrapper, .streamplan-wrapper {
             position: fixed;
-            left: 20px;
             top: 50%;
             transform: translateY(-50%);
-            width: max(25vw, 500px); /* Nutzt den Platz optimal bis zu den Karten */
+            width: max(25vw, 500px); /* Nutzt den Platz optimal */
             height: calc(max(25vw, 500px) * 0.5625); /* 16:9 Verhältnis */
-            max-width: 40vw; /* Verhindert, dass es zu groß wird */
+            max-width: 40vw; /* Verhindert zu große Darstellung */
             max-height: 40vh; /* Anpassung an Viewport-Höhe */
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
             z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: black;
         }
 
-        /* Twitch Iframe passt sich immer an */
+        /* Twitch-Player links */
+        .twitch-wrapper {
+            left: 20px;
+        }
+
+        /* Streamplan-Bild rechts */
+        .streamplan-wrapper {
+            right: 20px;
+        }
+
+        /* Twitch Iframe */
         .twitch-wrapper iframe {
             width: 100%;
             height: 100%;
+        }
+
+        /* Bild für Streamplan */
+        .streamplan-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .album-title { 
@@ -171,7 +191,7 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <!-- Twitch Livestream Container -->
+    <!-- Twitch Livestream links -->
     <div class="twitch-wrapper">
         <iframe 
             src="https://player.twitch.tv/?channel=zarbex&parent=kampfschwein-tcg.onrender.com" 
@@ -179,6 +199,11 @@ app.get('/:username', async (req, res) => {
             allowfullscreen="true" 
             scrolling="no">
         </iframe>
+    </div>
+
+    <!-- Streamplan rechts -->
+    <div class="streamplan-wrapper">
+        <img src="/streamplan.png" alt="Streamplan">
     </div>
 
     <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
