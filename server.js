@@ -84,7 +84,7 @@ app.get('/:username', async (req, res) => {
                     font-size: 2.5em; 
                     margin-bottom: 20px; 
                     color: white; 
-                    text-shadow: 0 0 5px #c200ff, 0 0 10px #c200ff, 0 0 20px #a000cc; 
+                    text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF, 0 0 20px #6016FF; 
                 }
                 .album-grid { 
                     display: grid; 
