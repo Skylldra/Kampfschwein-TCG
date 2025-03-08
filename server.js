@@ -18,9 +18,9 @@ app.use(express.static(path.join(__dirname))); // Macht background.png verfügba
 
 // Kartenpool mit Index für Nummerierung
 const cards = [
-    "Vampirschwein", "Astronautenschwein", "Officer Schwein", "König Schweinchen",
-    "Truckerschwein", "Doktor Schwein", "Captain Schweinchen", "Magierschwein",
-    "Boss Schwein", "Feuerwehr Schwein", "Alien Schwein", "Zukunft Schwein"
+    "Officer Schwein", "Vampir Schwein", "Ritter Schwein", "Zauberer Schwein",
+    "Cyber Schwein", "Ninja Schwein", "Piraten Schwein", "Alien Schwein",
+    "Zombie Schwein", "Geister Schwein", "Gladiator Schwein", "Samurai Schwein"
 ];
 const totalCards = cards.length;
 
@@ -49,14 +49,14 @@ app.get('/:username', async (req, res) => {
             const isOwned = ownedCards.has(card);
             const imgExt = isOwned ? 'png' : 'jpg';
             const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.${imgExt}`;
-            const displayText = isOwned ? ${card} ${cardNumber}/${totalCards}<br>${ownedCards.get(card)} : ??? ${cardNumber}/${totalCards};
-            return <div class='card-container' onclick='enlargeCard(this)'>
+            const displayText = isOwned ? `${card} ${cardNumber}/${totalCards}<br>${ownedCards.get(card)}` : `??? ${cardNumber}/${totalCards}`;
+            return `<div class='card-container' onclick='enlargeCard(this)'>
                         <img src='${imgSrc}' class='card-img'>
                         <p>${displayText}</p>
-                    </div>;
+                    </div>`;
         }).join('');
 
-        res.send(<!DOCTYPE html>
+        res.send(`<!DOCTYPE html>
         <html lang='de'>
         <head>
             <meta charset='UTF-8'>
@@ -95,23 +95,24 @@ app.get('/:username', async (req, res) => {
                     margin: auto; 
                 }
                 .card-container { 
-                    text-align: center; 
-                    display: flex; 
-                    flex-direction: column; 
-                    align-items: center; 
-                }
+    text-align: center; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
 
-                .card-container p { 
-                    background: white; 
-                    border: 2px solid #6016FF;
-                    padding: 5px;
-                    margin-top: 5px;
-                    width: fit-content;
-                    font-weight: bold;
-                    text-align: center;
-                    display: flex;
-                    flex-direction: column;
-                }
+.card-container p { 
+    background: white; 
+    border: 2px solid #6016FF;
+    padding: 5px;
+    margin-top: 5px;
+    width: fit-content;
+    font-weight: bold;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
                 .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
                 .card-img:hover { transform: scale(1.1); }
                 #overlay { 
@@ -145,7 +146,7 @@ app.get('/:username', async (req, res) => {
                 }
             </script>
         </body>
-        </html>);
+        </html>`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
@@ -167,7 +168,7 @@ app.get('/random/:username', async (req, res) => {
             "INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)",
             [username, card, date]
         );
-        res.send(${card} ${cardNumber}/${totalCards});
+        res.send(`${card} ${cardNumber}/${totalCards}`);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Speichern der Karte");
@@ -175,5 +176,5 @@ app.get('/random/:username', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(Server läuft auf Port ${port});
+    console.log(`Server läuft auf Port ${port}`);
 });
