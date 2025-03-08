@@ -133,11 +133,10 @@ app.get('/:username', async (req, res) => {
             object-fit: contain;
         }
 
-        /* Falls nach unten verschoben */
-        .moved-down {
+        /* Falls nach oben verschoben */
+        .moved-top {
             position: absolute !important;
-            top: unset !important;
-            bottom: 20px !important;
+            top: 10px !important;
             transform: none !important;
         }
 
@@ -272,13 +271,13 @@ app.get('/:username', async (req, res) => {
         const streamplanRect = streamplan.getBoundingClientRect();
         const cardsRect = cards.getBoundingClientRect();
 
-        // Falls Player oder Streamplan überlappt, nach unten verschieben, aber links/rechts behalten
+        // Falls Player oder Streamplan überlappt, nach OBEN verschieben (über die Überschrift)
         if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
-            twitch.classList.add('moved-down');
-            streamplan.classList.add('moved-down');
+            twitch.classList.add('moved-top');
+            streamplan.classList.add('moved-top');
         } else {
-            twitch.classList.remove('moved-down');
-            streamplan.classList.remove('moved-down');
+            twitch.classList.remove('moved-top');
+            streamplan.classList.remove('moved-top');
         }
     }
 
