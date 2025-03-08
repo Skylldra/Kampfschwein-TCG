@@ -90,14 +90,14 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player größer machen, aber Abstand lassen */
+        /* Twitch-Player noch größer machen */
         .twitch-wrapper {
             position: fixed;
             left: 20px; /* Abstand zum linken Rand */
             top: 50%;
             transform: translateY(-50%);
-            width: 500px; /* Größerer Player */
-            height: 280px; /* Höhe angepasst */
+            width: 640px; /* Breite vergrößert */
+            height: 360px; /* Höhe vergrößert */
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
@@ -167,7 +167,7 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <!-- Twitch Livestream Container (fixiert links) -->
+    <!-- Twitch Livestream Container (fixiert links, jetzt größer) -->
     <div class="twitch-wrapper">
         <iframe 
             src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
