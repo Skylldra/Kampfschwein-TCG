@@ -14,6 +14,7 @@ const pool = new Pool({
 
 // Statische Dateien bereitstellen
 app.use('/cards', express.static(path.join(__dirname, 'cards')));
+app.use('/background', express.static(path.join(__dirname, 'background.png')));
 
 // Kartenpool mit Index für Nummerierung
 const cards = [
@@ -42,7 +43,7 @@ app.get('/:username', async (req, res) => {
     try {
         const result = await pool.query("SELECT card_name, obtained_date FROM user_cards WHERE username = $1 OR LOWER(username) = LOWER($1);", [username]);
         const ownedCards = new Map(result.rows.map(row => [row.card_name, formatDate(row.obtained_date)]));
-        
+
         const albumHtml = cards.map((card, index) => {
             const cardNumber = String(index + 1).padStart(2, '0');
             const isOwned = ownedCards.has(card);
@@ -54,7 +55,7 @@ app.get('/:username', async (req, res) => {
                         <p>${displayText}</p>
                     </div>`;
         }).join('');
-        
+
         res.send(`<!DOCTYPE html>
         <html lang='de'>
         <head>
@@ -62,49 +63,49 @@ app.get('/:username', async (req, res) => {
             <meta name='viewport' content='width=device-width, initial-scale=1.0'>
             <title>Schweinchen-Sammelalbum von ${username}</title>
             <style>
-    body { 
-        font-family: Arial, sans-serif; 
-        text-align: center; 
-        background: url('/background.png') no-repeat center center fixed; 
-        background-size: cover;
-    }
+                body { 
+                    font-family: Arial, sans-serif; 
+                    text-align: center; 
+                    background: url('/background/background.png') no-repeat center center fixed; 
+                    background-size: cover;
+                }
 
-    body::after {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.25); /* 25% Transparenz */
-        z-index: -1;
-    }
+                body::after {
+                    content: "";
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(255, 255, 255, 0.25); /* 25% Transparenz */
+                    z-index: -1;
+                }
 
-    .album-title { font-size: 2em; margin-bottom: 20px; }
-    .album-grid { 
-        display: grid; 
-        grid-template-columns: repeat(3, 1fr); 
-        gap: 20px; 
-        justify-content: center; 
-        max-width: 900px; 
-        margin: auto; 
-    }
-    .card-container { text-align: center; cursor: pointer; }
-    .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
-    .card-img:hover { transform: scale(1.1); }
-    #overlay { 
-        position: fixed; 
-        top: 0; 
-        left: 0; 
-        width: 100%; 
-        height: 100%; 
-        background: rgba(0, 0, 0, 0.8); 
-        display: none; 
-        align-items: center; 
-        justify-content: center; 
-    }
-    #overlay-img { max-width: 80%; max-height: 80%; }
-</style>
+                .album-title { font-size: 2em; margin-bottom: 20px; }
+                .album-grid { 
+                    display: grid; 
+                    grid-template-columns: repeat(3, 1fr); 
+                    gap: 20px; 
+                    justify-content: center; 
+                    max-width: 900px; 
+                    margin: auto; 
+                }
+                .card-container { text-align: center; cursor: pointer; }
+                .card-img { width: 150px; height: 200px; transition: transform 0.2s ease-in-out; }
+                .card-img:hover { transform: scale(1.1); }
+                #overlay { 
+                    position: fixed; 
+                    top: 0; 
+                    left: 0; 
+                    width: 100%; 
+                    height: 100%; 
+                    background: rgba(0, 0, 0, 0.8); 
+                    display: none; 
+                    align-items: center; 
+                    justify-content: center; 
+                }
+                #overlay-img { max-width: 80%; max-height: 80%; }
+            </style>
         </head>
         <body>
             <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
