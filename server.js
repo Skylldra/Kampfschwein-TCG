@@ -96,12 +96,10 @@ app.get('/:username', async (req, res) => {
     left: 20px; /* Abstand zum linken Rand */
     top: 50%;
     transform: translateY(-50%);
-    max-width: 30vw; /* Maximal 30% der Bildschirmbreite */
-    max-height: 50vh; /* Maximal 50% der Bildschirmhöhe */
-    width: 500px; /* Standardbreite für große Bildschirme */
-    height: 300px; /* Standardhöhe für große Bildschirme */
-    min-width: 300px; /* Mindestgröße, damit es nicht zu klein wird */
-    min-height: 200px; /* Mindestgröße für Lesbarkeit */
+    width: min(30vw, 600px); /* Maximal 30% der Bildschirmbreite oder 600px, je nachdem, was kleiner ist */
+    height: min(17vw, 350px); /* Maximal 17% der Breite oder 350px, je nachdem, was kleiner ist */
+    min-width: 280px; /* Mindestbreite, damit es nicht zu klein wird */
+    min-height: 160px; /* Mindesthöhe für Lesbarkeit */
     border-radius: 10px;
     border: 3px solid #6016FF;
     overflow: hidden;
