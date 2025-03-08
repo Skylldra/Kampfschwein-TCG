@@ -153,14 +153,17 @@ app.get('/:username', async (req, res) => {
     }
 });
 
-// Zufällige Karte ziehen
 app.get('/random/:username', async (req, res) => {
     const username = req.params.username;
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
-    const randomIndex = Math.floor(Math.random() * totalCards);
-    const card = cards[randomIndex];
-    const cardNumber = String(randomIndex + 1).padStart(2, '0');
+    // Wahrscheinlichkeit für "Zukunft Schwein" reduzieren
+    const weightedCards = [...cards, ...cards, ...cards, ...cards, ...cards]; // 5x mehr normale Karten
+    weightedCards.push(cards[cards.length - 1]); // 1x Zukunft Schwein (seltener)
+
+    const randomIndex = Math.floor(Math.random() * weightedCards.length);
+    const card = weightedCards[randomIndex];
+    const cardNumber = String(cards.indexOf(card) + 1).padStart(2, '0');
     const date = new Date().toISOString().split('T')[0];
 
     try {
