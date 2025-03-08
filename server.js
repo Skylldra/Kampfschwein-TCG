@@ -41,11 +41,9 @@ app.get('/:username', async (req, res) => {
 
     try {
         // Holen des Original-Benutzernamens aus der Datenbank
-        const userResult = await pool.query("SELECT username FROM user_cards WHERE LOWER(username) = LOWER($1) LIMIT 1", [username]);
+        const userResult = await pool.query("SELECT DISTINCT username FROM user_cards WHERE LOWER(username) = LOWER($1) LIMIT 1", [username]);
         if (userResult.rowCount > 0) {
             username = userResult.rows[0].username; // Setzt den Originalnamen aus der Datenbank
-        } else {
-            username = req.params.username; // Falls nichts gefunden wurde, bleibt der eingegebene Name
         }
 
         const result = await pool.query("SELECT card_name, obtained_date FROM user_cards WHERE LOWER(username) = LOWER($1)", [username]);
