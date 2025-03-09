@@ -77,9 +77,9 @@ app.get('/:username', async (req, res) => {
                     <p>${displayText}</p>
                 </div>`;
     }).join('');
-}
+}  // ✅ HIER IST DIE FEHLENDE SCHLIESSENDE Klammer!
 
-// ✅ Album-HTML erst hier generieren, nach der Funktion!
+// Jetzt wird albumHtml nach der korrekt abgeschlossenen Funktion generiert
 let albumHtml = generateAlbumHtml(ownedCards, currentGenIndex);
 
         res.send(`<!DOCTYPE html>
