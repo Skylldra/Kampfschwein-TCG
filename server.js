@@ -46,7 +46,7 @@ const generations = [
         { name: "Pflanzenschwein", rarity: 1 },
         { name: "Zombieschwein", rarity: 1 },
         { name: "Sir Schweinchen", rarity: 1 },
-        { name: "Detektiv Schweinchen", rarity: 1 },
+        { name: "Detektiv Schnüffelschwein", rarity: 1 },
         { name: "Ninja Schwein", rarity: 2 },
         { name: "Schweinaldo", rarity: 2 },
         { name: "Agent Oink", rarity: 3 },
