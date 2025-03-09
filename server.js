@@ -42,6 +42,26 @@ function formatDate(dateString) {
     return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+function generateAlbumHtml(ownedCards, genIndex) {
+    const cards = generations[genIndex];
+    const startIndex = genIndex * 12 + 1;
+
+    return cards.map((card, index) => {
+        const cardNumber = String(startIndex + index).padStart(2, '0');
+        const isOwned = ownedCards.has(card);
+        const imgSrc = `/cards/${cardNumber}${isOwned ? '' : '_blurred'}.png`;
+
+        const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
+        const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
+        const displayText = isOwned ? `${countText}${card} ${cardNumber}/12${dateText}` : `??? ${cardNumber}/12`;
+
+        return `<div class='card-container' onclick='enlargeCard(this)'>
+                    <img src='${imgSrc}' class='card-img'>
+                    <p>${displayText}</p>
+                </div>`;
+    }).join('');
+} // ✅ Hier wird die Funktion korrekt geschlossen!
+    
 // Benutzeralbum anzeigen
 app.get('/:username', async (req, res) => {
     const username = req.params.username;
@@ -58,26 +78,6 @@ app.get('/:username', async (req, res) => {
         const ownedCards = new Map(result.rows.map(row => [row.card_name, { count: row.count, date: formatDate(row.first_obtained) }]));
 
         let currentGenIndex = 0; // Standardmäßig Gen 1
-
-        function generateAlbumHtml(ownedCards, genIndex) {
-    const cards = generations[genIndex];
-    const startIndex = genIndex * 12 + 1; // Berechnet die richtige Karten-ID (1-12, 13-24, 25-36)
-
-    return cards.map((card, index) => {
-        const cardNumber = String(startIndex + index).padStart(2, '0');
-        const isOwned = ownedCards.has(card);
-        const imgSrc = `/cards/${cardNumber}${isOwned ? '' : '_blurred'}.png`;  
-
-        const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
-        const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
-        const displayText = isOwned ? `${countText}${card} ${cardNumber}/12${dateText}` : `??? ${cardNumber}/12`;
-
-        return `<div class='card-container' onclick='enlargeCard(this)'>
-                    <img src='${imgSrc}' class='card-img'>
-                    <p>${displayText}</p>
-                </div>`;
-    }).join('');
-}  // ✅ HIER IST DIE FEHLENDE SCHLIESSENDE Klammer!
 
 // Jetzt wird albumHtml nach der korrekt abgeschlossenen Funktion generiert
 let albumHtml = generateAlbumHtml(ownedCards, currentGenIndex);
