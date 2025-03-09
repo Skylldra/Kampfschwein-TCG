@@ -59,16 +59,14 @@ app.get('/:username', async (req, res) => {
 
         let currentGenIndex = 0; // Standardmäßig Gen 1
 
-        let albumHtml = generateAlbumHtml(ownedCards, currentGenIndex);
-
-function generateAlbumHtml(ownedCards, genIndex) {
+        function generateAlbumHtml(ownedCards, genIndex) {
     const cards = generations[genIndex];
     const startIndex = genIndex * 12 + 1; // Berechnet die richtige Karten-ID (1-12, 13-24, 25-36)
 
     return cards.map((card, index) => {
         const cardNumber = String(startIndex + index).padStart(2, '0');
         const isOwned = ownedCards.has(card);
-        const imgSrc = `/cards/${cardNumber}${isOwned ? '' : '_blurred'}.png`;  // ✅ KORREKTE VERSION
+        const imgSrc = `/cards/${cardNumber}${isOwned ? '' : '_blurred'}.png`;  
 
         const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
         const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
@@ -80,6 +78,9 @@ function generateAlbumHtml(ownedCards, genIndex) {
                 </div>`;
     }).join('');
 }
+
+// ✅ Album-HTML erst hier generieren, nach der Funktion!
+let albumHtml = generateAlbumHtml(ownedCards, currentGenIndex);
 
         res.send(`<!DOCTYPE html>
 <html lang='de'>
