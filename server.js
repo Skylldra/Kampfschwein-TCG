@@ -57,6 +57,25 @@ app.get('/:username', async (req, res) => {
 
         const ownedCards = new Map(result.rows.map(row => [row.card_name, { count: row.count, date: formatDate(row.first_obtained) }]));
 
+        const currentGenIndex = 0; // Standardmäßig Gen 1
+const cards = generations[currentGenIndex]; // Karten der aktuellen Generation
+
+const albumHtml = cards.map((card, index) => {
+    const cardNumber = String(index + 1).padStart(2, '0');
+    const isOwned = ownedCards.has(card);
+    const imgExt = isOwned ? 'png' : 'jpg';
+    const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.${imgExt}`;
+
+    const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
+    const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
+    const displayText = isOwned ? `${countText}${card} ${cardNumber}/${cards.length}${dateText}` : `??? ${cardNumber}/${cards.length}`;
+
+    return `<div class='card-container' onclick='enlargeCard(this)'>
+                <img src='${imgSrc}' class='card-img'>
+                <p>${displayText}</p>
+            </div>`;
+}).join('');
+
         res.send(`<!DOCTYPE html>
 <html lang='de'>
 <head>
