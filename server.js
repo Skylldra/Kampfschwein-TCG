@@ -413,46 +413,77 @@ app.get('/:username', async (req, res) => {
     </div>
 
     <script>
-        let currentGen = 1;
-        const totalGenerations = ${totalGenerations};
+    let currentGen = 1;
+    const totalGenerations = ${totalGenerations};
 
-        function prevGen() {
-            if (currentGen > 1) {
-                currentGen--;
-                updateGenDisplay();
+    // Diese Funktion ersetzt die src-Attribute mit data-src beim Laden der Seite
+    function setupLazyLoading() {
+        // Für alle Generationen außer der ersten (die sofort angezeigt wird)
+        for (let i = 2; i <= totalGenerations; i++) {
+            const genElement = document.getElementById("gen-" + i);
+            if (genElement) {
+                const images = genElement.querySelectorAll('.card-img');
+                images.forEach(img => {
+                    // Speichere die eigentliche Bild-URL in einem data-Attribut
+                    img.setAttribute('data-src', img.src);
+                    // Setze ein Platzhalterbild oder transparent
+                    img.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+                });
             }
         }
+    }
 
-        function nextGen() {
-            if (currentGen < totalGenerations) {
-                currentGen++;
-                updateGenDisplay();
-            }
+    function prevGen() {
+        if (currentGen > 1) {
+            currentGen--;
+            updateGenDisplay();
         }
+    }
 
-        function updateGenDisplay() {
-            // Aktualisiere den Generationstext
-            document.getElementById("gen-text").innerText = "Gen. " + currentGen;
-            
-            // Verstecke alle Generationen und zeige nur die aktuelle
-            for (let i = 1; i <= totalGenerations; i++) {
-                const genElement = document.getElementById("gen-" + i);
-                if (genElement) {
-                    genElement.style.display = (i === currentGen) ? 'grid' : 'none';
+    function nextGen() {
+        if (currentGen < totalGenerations) {
+            currentGen++;
+            updateGenDisplay();
+        }
+    }
+
+    function updateGenDisplay() {
+        // Aktualisiere den Generationstext
+        document.getElementById("gen-text").innerText = "Gen. " + currentGen;
+        
+        // Verstecke alle Generationen und zeige nur die aktuelle
+        for (let i = 1; i <= totalGenerations; i++) {
+            const genElement = document.getElementById("gen-" + i);
+            if (genElement) {
+                const isCurrentGen = i === currentGen;
+                genElement.style.display = isCurrentGen ? 'grid' : 'none';
+                
+                // Wenn es die aktuelle Generation ist, lade die Bilder
+                if (isCurrentGen) {
+                    const images = genElement.querySelectorAll('.card-img');
+                    images.forEach(img => {
+                        // Wenn das Bild ein data-src hat, lade es jetzt
+                        if (img.getAttribute('data-src')) {
+                            img.src = img.getAttribute('data-src');
+                        }
+                    });
                 }
             }
         }
+    }
 
-        function enlargeCard(card) {
-            document.getElementById('overlay-img').src = card.querySelector('img').src;
-            document.getElementById('overlay').style.display = 'flex';
-        }
+    function enlargeCard(card) {
+        document.getElementById('overlay-img').src = card.querySelector('img').src;
+        document.getElementById('overlay').style.display = 'flex';
+    }
 
-        function closeEnlarged() {
-            document.getElementById('overlay').style.display = 'none';
-        }
-    </script>
-
+    function closeEnlarged() {
+        document.getElementById('overlay').style.display = 'none';
+    }
+    
+    // Führe das Setup beim Laden der Seite aus
+    document.addEventListener('DOMContentLoaded', setupLazyLoading);
+</script>
 </body>
 </html>`);
     } catch (err) {
