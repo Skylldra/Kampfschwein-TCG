@@ -322,14 +322,38 @@ function generateAlbumHtml(ownedCards, genIndex) {
         }
 
         function updateCards() {
-    fetch(window.location.pathname) // Ruft die aktuelle Seite erneut auf
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newCards = doc.querySelector('.album-grid').innerHTML;
-            document.querySelector('.album-grid').innerHTML = newCards;
-        });
+    const ownedCards = new Map();
+    const genIndex = currentGen - 1; // Index anpassen, da Gen. 1 = Index 0 ist
+    const cards = [
+        ["Vampirschwein", "Astronautenschwein", "Officer Schwein", "König Schweinchen",
+         "Truckerschwein", "Doktor Schwein", "Captain Schweinchen", "Magierschwein",
+         "Boss Schwein", "Feuerwehr Schwein", "Alien Schwein", "Zukunft Schwein"],
+        ["Cyber-Schwein", "Ninja-Schwein", "Piratenschwein", "Ritter-Schwein",
+         "Detektiv-Schwein", "Dino-Schwein", "Pharao-Schwein", "Wikinger-Schwein",
+         "Cowboy-Schwein", "Superheld-Schwein", "Samurai-Schwein", "Geister-Schwein"],
+        ["Gamer-Schwein", "Steampunk-Schwein", "Clown-Schwein", "Roboter-Schwein",
+         "Zombie-Schwein", "Teufels-Schwein", "Engel-Schwein", "Hexen-Schwein",
+         "Gladiator-Schwein", "Alien-König", "Drachen-Schwein", "Neon-Schwein"]
+    ][genIndex];
+
+    const startIndex = genIndex * 12 + 1; // Karten-ID bestimmen (1-12, 13-24, 25-36)
+
+    const albumHtml = cards.map((card, index) => {
+        const cardNumber = String(startIndex + index).padStart(2, '0');
+        const isOwned = ownedCards.has(card);
+        const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
+
+        const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
+        const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
+        const displayText = isOwned ? `${countText}${card} ${cardNumber}/12${dateText}` : `??? ${cardNumber}/12`;
+
+        return `<div class='card-container' onclick='enlargeCard(this)'>
+                    <img src='${imgSrc}' class='card-img'>
+                    <p>${displayText}</p>
+                </div>`;
+    }).join('');
+
+    document.querySelector('.album-grid').innerHTML = albumHtml;
 }
 
         function enlargeCard(card) {
