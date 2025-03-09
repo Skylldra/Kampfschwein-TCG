@@ -328,7 +328,7 @@ function generateAlbumHtml(ownedCards, genIndex) {
 
     const albumHtml = cards.map((card, index) => {
         const cardNumber = String(startIndex + index).padStart(2, '0');
-        const imgSrc = `/cards/${cardNumber}.png`; // Keine DB-Abfrage im Frontend nötig
+        const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
 
         return `<div class='card-container' onclick='enlargeCard(this)'>
                     <img src='${imgSrc}' class='card-img'>
