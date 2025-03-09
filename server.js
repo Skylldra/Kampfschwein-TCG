@@ -63,8 +63,7 @@ const cards = generations[currentGenIndex]; // Karten der aktuellen Generation
 const albumHtml = cards.map((card, index) => {
     const cardNumber = String(index + 1).padStart(2, '0');
     const isOwned = ownedCards.has(card);
-    const imgExt = isOwned ? 'png' : 'jpg';
-    const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.${imgExt}`;
+    const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
 
     const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
     const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
