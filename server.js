@@ -82,88 +82,42 @@ app.get('/:username', async (req, res) => {
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
     try {
+        const result = await pool.query(`
+            SELECT card_name, COUNT(*) AS count, MIN(obtained_date) AS first_obtained 
+            FROM user_cards 
+            WHERE username = $1 OR LOWER(username) = LOWER($1) 
+            GROUP BY card_name
+        `, [username]);
+
+        const ownedCards = new Map(result.rows.map(row => [row.card_name, { count: row.count, date: formatDate(row.first_obtained) }]));
+
         res.send(`<!DOCTYPE html>
         <html lang='de'>
         <head>
             <meta charset='UTF-8'>
             <meta name='viewport' content='width=device-width, initial-scale=1.0'>
             <title>Schweinchen-Sammelalbum von ${username}</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    text-align: center;
-                    background: url('/background.png') no-repeat center center fixed;
-                    background-size: cover;
-                }
-                .album-title {
-                    font-size: 2.5em;
-                    margin-bottom: 20px;
-                    color: white;
-                    text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF, 0 0 20px #6016FF;
-                }
-                .album-grid {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 20px;
-                    justify-content: center;
-                    max-width: 900px;
-                    margin: auto;
-                }
-                .card-container {
-                    text-align: center;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                }
-                .generation-controls {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    margin-top: 20px;
-                }
-                .gen-button {
-                    padding: 10px 20px;
-                    font-size: 1.2em;
-                    border: 2px solid #6016FF;
-                    background: white;
-                    cursor: pointer;
-                    transition: 0.2s ease-in-out;
-                }
-                .gen-button:hover {
-                    background: #6016FF;
-                    color: white;
-                }
-                #gen-text {
-                    margin: 0 20px;
-                    font-size: 1.5em;
-                    font-weight: bold;
-                }
-            </style>
-        </head>
-        <body>
-            <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-            <div id="cards-container" class='album-grid'></div>
-            
-            <div class="generation-controls">
-                <button class="gen-button" onclick="prevGen()">← Zurück</button>
-                <span id="gen-text">Gen. 1</span>
-                <button class="gen-button" onclick="nextGen()">Vor →</button>
-            </div>
-
             <script>
                 const generations = ${JSON.stringify(generations)};
                 let currentGen = 1;
-
+                
                 function updateCards() {
                     const container = document.getElementById("cards-container");
                     container.innerHTML = "";
                     generations[currentGen].forEach((cardObj, index) => {
                         const cardNumber = String(index + 1).padStart(2, '0');
-                        const imgSrc = \`/cards/\${cardNumber}.png\`;
+                        const isOwned = ${JSON.stringify(Array.from(ownedCards.keys()))}.includes(cardObj.card);
+                        const imgExt = isOwned ? 'png' : 'jpg';
+                        const imgSrc = isOwned ? \`/cards/\${cardNumber}.png\` : \`/cards/\${cardNumber}_blurred.\${imgExt}\`;
+
+                        const countText = isOwned ? ${JSON.stringify(ownedCards)}[cardObj.card]?.count + "x " : "";
+                        const dateText = isOwned ? "<br>" + ${JSON.stringify(ownedCards)}[cardObj.card]?.date : "";
+                        const displayText = isOwned ? countText + cardObj.card + " " + cardNumber + "/12" + dateText : "??? " + cardNumber + "/12";
+
                         container.innerHTML += \`
-                            <div class='card-container'>
+                            <div class='card-container' onclick='enlargeCard(this)'>
                                 <img src='\${imgSrc}' class='card-img'>
-                                <p>\${cardObj.card} \${cardNumber}/12</p>
+                                <p>\${displayText}</p>
                             </div>\`;
                     });
                     document.getElementById("gen-text").innerText = "Gen. " + currentGen;
@@ -185,6 +139,16 @@ app.get('/:username', async (req, res) => {
 
                 window.onload = updateCards;
             </script>
+        </head>
+        <body>
+            <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
+            <div id="cards-container" class='album-grid'></div>
+
+            <div class="generation-controls">
+                <button class="gen-button" onclick="prevGen()">← Zurück</button>
+                <span id="gen-text">Gen. 1</span>
+                <button class="gen-button" onclick="nextGen()">Vor →</button>
+            </div>
         </body>
         </html>`);
     } catch (err) {
@@ -198,7 +162,6 @@ app.get('/random/:username', async (req, res) => {
     const username = req.params.username;
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
-    // Alle Karten mit ihren Gewichten zusammenführen
     const probabilities = Object.values(generations).flat();
     const totalWeight = probabilities.reduce((sum, item) => sum + item.weight, 0);
     let threshold = Math.random() * totalWeight;
