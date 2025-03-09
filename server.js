@@ -1,5 +1,4 @@
-
-//Letzte Finale Version
+//Letzter Meilenstein ohe Austausch der Karten bei Generationswechsel
 const express = require('express');
 const { Pool } = require('pg');
 require('dotenv').config();
@@ -18,18 +17,25 @@ const pool = new Pool({
 app.use('/cards', express.static(path.join(__dirname, 'cards')));
 app.use(express.static(path.join(__dirname))); // Macht background.png verfügbar
 
-// Kartenpool mit Index für Nummerierung
-const cards = [
-    "Vampirschwein", "Astronautenschwein", "Officer Schwein", "König Schweinchen",
-    "Truckerschwein", "Doktor Schwein", "Captain Schweinchen", "Magierschwein",
-    "Boss Schwein", "Feuerwehr Schwein", "Alien Schwein", "Zukunft Schwein"
+// Karten nach Generationen geordnet
+const generations = [
+    [ // Generation 1
+        "Vampirschwein", "Astronautenschwein", "Officer Schwein", "König Schweinchen",
+        "Truckerschwein", "Doktor Schwein", "Captain Schweinchen", "Magierschwein",
+        "Boss Schwein", "Feuerwehr Schwein", "Alien Schwein", "Zukunft Schwein"
+    ],
+    [ // Generation 2
+        "Cyber-Schwein", "Ninja-Schwein", "Piratenschwein", "Ritter-Schwein",
+        "Detektiv-Schwein", "Dino-Schwein", "Pharao-Schwein", "Wikinger-Schwein",
+        "Cowboy-Schwein", "Superheld-Schwein", "Samurai-Schwein", "Geister-Schwein"
+    ],
+    [ // Generation 3
+        "Gamer-Schwein", "Steampunk-Schwein", "Clown-Schwein", "Roboter-Schwein",
+        "Zombie-Schwein", "Teufels-Schwein", "Engel-Schwein", "Hexen-Schwein",
+        "Gladiator-Schwein", "Alien-König", "Drachen-Schwein", "Neon-Schwein"
+    ]
 ];
-const totalCards = cards.length;
-
-// Root-Route für index.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+const totalGenerations = generations.length;
 
 // Datum in deutsches Format umwandeln
 function formatDate(dateString) {
@@ -43,32 +49,35 @@ app.get('/:username', async (req, res) => {
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
     try {
-        const result = await pool.query(`
+        const result = await pool.query(
             SELECT card_name, COUNT(*) AS count, MIN(obtained_date) AS first_obtained 
             FROM user_cards 
             WHERE username = $1 OR LOWER(username) = LOWER($1) 
             GROUP BY card_name
-        `, [username]);
+        , [username]);
 
         const ownedCards = new Map(result.rows.map(row => [row.card_name, { count: row.count, date: formatDate(row.first_obtained) }]));
 
-        const albumHtml = cards.map((card, index) => {
-            const cardNumber = String(index + 1).padStart(2, '0');
-            const isOwned = ownedCards.has(card);
-            const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
+        const currentGenIndex = 0; // Standardmäßig Gen 1
+const cards = generations[currentGenIndex]; // Karten der aktuellen Generation
 
-            const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
-            const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
-            const displayText = isOwned ? `${countText}${card} ${cardNumber}/${totalCards}${dateText}` : `??? ${cardNumber}/${totalCards}`;
+const albumHtml = cards.map((card, index) => {
+    const cardNumber = String(index + 1).padStart(2, '0');
+    const isOwned = ownedCards.has(card);
+    const imgSrc = isOwned ? /cards/${cardNumber}.png : /cards/${cardNumber}_blurred.png;
 
-            return `<div class='card-container' onclick='enlargeCard(this)'>
-                        <img src='${imgSrc}' class='card-img'>
-                        <p>${displayText}</p>
-                    </div>`;
-        }).join('');
+    const countText = isOwned ? ${ownedCards.get(card).count}x  : "";
+    const dateText = isOwned ? <br>${ownedCards.get(card).date} : "";
+    const displayText = isOwned ? ${countText}${card} ${cardNumber}/${cards.length}${dateText} : ??? ${cardNumber}/${cards.length};
 
-        res.send(`<!DOCTYPE html>
-        <html lang='de'>
+    return <div class='card-container' onclick='enlargeCard(this)'>
+                <img src='${imgSrc}' class='card-img'>
+                <p>${displayText}</p>
+            </div>;
+}).join('');
+
+        res.send(<!DOCTYPE html>
+<html lang='de'>
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
@@ -177,7 +186,6 @@ app.get('/:username', async (req, res) => {
         }
         .card-img:hover { transform: scale(1.1); }
 
-
         #overlay { 
             position: fixed; 
             top: 0; 
@@ -188,12 +196,11 @@ app.get('/:username', async (req, res) => {
             display: none; 
             align-items: center; 
             justify-content: center; 
-
         }
 
         #overlay-img { max-width: 80%; max-height: 80%; }
 
-                /* Developer Box bleibt immer gleich groß */
+        /* Developer Box bleibt immer gleich groß */
         .dev-box {
             position: fixed;
             bottom: 20px;
@@ -209,12 +216,45 @@ app.get('/:username', async (req, res) => {
             transition: background 0.3s ease-in-out;
             width: fit-content;
             white-space: nowrap;
-            transform: scale(1); /* Verhindert Größenänderung beim Zoomen */
+            transform: scale(1);
         }
 
         .dev-box:hover {
             background: #6016FF;
         }
+
+        /* Buttons für Generationen-Wechsel */
+        .generation-controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .gen-button {
+            padding: 10px 15px;
+            font-size: 1em;
+            font-weight: bold;
+            background-color: #6016FF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+        }
+
+        .gen-button:hover {
+            background-color: #4300A3;
+        }
+
+        .gen-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF;
+        }
+
     </style>
 </head>
 <body>
@@ -235,7 +275,17 @@ app.get('/:username', async (req, res) => {
     </div>
 
     <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-    <div class='album-grid'>${albumHtml}</div>
+    
+    <div class='album-grid' id="cards-container">
+        ${albumHtml}
+    </div>
+
+    <!-- Generationen Navigation -->
+    <div class="generation-controls">
+        <button class="gen-button" onclick="prevGen()">← Zurück</button>
+        <span id="gen-text" class="gen-text">Gen. 1</span>
+        <button class="gen-button" onclick="nextGen()">Vor →</button>
+    </div>
 
     <div id='overlay' onclick='closeEnlarged()'>
         <img id='overlay-img'>
@@ -246,146 +296,65 @@ app.get('/:username', async (req, res) => {
         Developer: x_MeduZa_
     </div>
 
-    <!-- Vor- und Zurück Button + Gen-Text -->
-    <div class="generation-controls">
-        <button class="gen-button" onclick="prevGen()">← Zurück</button>
-        <span id="gen-text" class="gen-text">Gen. 1</span>
-        <button class="gen-button" onclick="nextGen()">Vor →</button>
-    </div>
-
     <script>
-    function enlargeCard(card) {
-        const imgSrc = card.querySelector('img').src;
-        document.getElementById('overlay-img').src = imgSrc;
-        document.getElementById('overlay').style.display = 'flex';
-    }
+        let currentGen = 1;
+        const totalGenerations = 3;
 
-    function closeEnlarged() {
-        document.getElementById('overlay').style.display = 'none';
-    }
-
-    function checkOverlap() {
-        const twitch = document.getElementById('twitchPlayer');
-        const streamplan = document.getElementById('streamplanImage');
-        const cards = document.querySelector('.album-grid');
-
-        if (!twitch || !streamplan || !cards) return;
-
-        const twitchRect = twitch.getBoundingClientRect();
-        const streamplanRect = streamplan.getBoundingClientRect();
-        const cardsRect = cards.getBoundingClientRect();
-
-        // Ursprüngliche Größe speichern
-        const originalSize = "20vw";
-        const originalHeight = "calc(20vw * 0.5625)";
-
-        // Falls Player oder Streamplan überlappt, zuerst verkleinern
-        if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
-            twitch.style.width = "12vw";
-            twitch.style.height = "calc(12vw * 0.5625)";
-            streamplan.style.width = "12vw";
-            streamplan.style.height = "calc(12vw * 0.5625)";
+        function prevGen() {
+            if (currentGen > 1) {
+                currentGen--;
+                document.getElementById("gen-text").innerText = "Gen. " + currentGen;
+                updateCards();
+            }
         }
 
-        // Falls immer noch überlappt → verstecken
-        if (twitchRect.right > cardsRect.left || streamplanRect.left < cardsRect.right) {
-            twitch.classList.add('hidden');
-            streamplan.classList.add('hidden');
-        } else {
-            twitch.classList.remove('hidden');
-            streamplan.classList.remove('hidden');
-
-            // Zurück zur Originalgröße
-            twitch.style.width = originalSize;
-            twitch.style.height = originalHeight;
-            streamplan.style.width = originalSize;
-            streamplan.style.height = originalHeight;
+        function nextGen() {
+            if (currentGen < totalGenerations) {
+                currentGen++;
+                document.getElementById("gen-text").innerText = "Gen. " + currentGen;
+                updateCards();
+            }
         }
-    }
 
-    window.addEventListener('resize', checkOverlap);
-    window.addEventListener('load', checkOverlap);
+        function updateCards() {
+            // Hier wird später die Kartenliste dynamisch geändert
+            console.log("Aktuelle Generation: " + currentGen);
+        }
+
+        function enlargeCard(card) {
+            document.getElementById('overlay-img').src = card.querySelector('img').src;
+            document.getElementById('overlay').style.display = 'flex';
+        }
+
+        function closeEnlarged() {
+            document.getElementById('overlay').style.display = 'none';
+        }
     </script>
 
 </body>
-</html>`);
+</html>);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
     }
 });
 
-let currentGen = 1;
-const totalGenerations = 3; // Falls es mehr als eine Generation gibt, anpassen
-
-function prevGen() {
-    if (currentGen > 1) {
-        currentGen--;
-        document.getElementById("gen-text").innerText = `Gen. ${currentGen}`;
-        updateCards();
-    }
-}
-
-function nextGen() {
-    if (currentGen < totalGenerations) {
-        currentGen++;
-        document.getElementById("gen-text").innerText = `Gen. ${currentGen}`;
-        updateCards();
-    }
-}
-
-function updateCards() {
-    // Diese Funktion sollte die Karten entsprechend der aktuellen Generation neu laden
-    console.log(`Lade Karten für Generation ${currentGen}`);
-}
-
 app.get('/random/:username', async (req, res) => {
     const username = req.params.username;
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
-    // Karten mit individuellen Wahrscheinlichkeiten
-    const probabilities = [
-        { card: "Vampirschwein", weight: 15 },
-        { card: "Astronautenschwein", weight: 15 },
-        { card: "Officer Schwein", weight: 15 },
-        { card: "König Schweinchen", weight: 15 },
-        { card: "Truckerschwein", weight: 15 },
-        { card: "Doktor Schwein", weight: 15 },
-        { card: "Captain Schweinchen", weight: 15 },
-        { card: "Magierschwein", weight: 15 },
-        { card: "Boss Schwein", weight: 15 },
-        { card: "Feuerwehr Schwein", weight: 15 },
-        { card: "Alien Schwein", weight: 15 },
-        { card: "Zukunft Schwein", weight: 5 } // Seltene Karte
-    ];
+    const allCards = generations.flat();
+    const probabilities = allCards.map(card => ({ card, weight: card.includes("Zukunft") ? 5 : 15 }));
 
-    // 1️⃣ Gesamtgewicht berechnen (Summe aller Wahrscheinlichkeiten)
     const totalWeight = probabilities.reduce((sum, item) => sum + item.weight, 0);
+    let threshold = Math.random() * totalWeight;
+    let selectedCard = probabilities.find(item => (threshold -= item.weight) <= 0)?.card || probabilities[0].card;
 
-    // 2️⃣ Gewichtete Auswahl treffen
-    let threshold = Math.random() * totalWeight; // Zufallszahl innerhalb des Gesamtgewichts
-    let selectedCard = null;
-
-    for (let item of probabilities) {
-        threshold -= item.weight;
-        if (threshold <= 0) {
-            selectedCard = item.card;
-            break;
-        }
-    }
-
-    // 3️⃣ Sicherstellen, dass eine Karte gewählt wurde
-    if (!selectedCard) selectedCard = probabilities[0].card;
-
-    const cardNumber = String(cards.indexOf(selectedCard) + 1).padStart(2, '0');
     const date = new Date().toISOString().split('T')[0];
 
     try {
-        await pool.query(
-            "INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)",
-            [username, selectedCard, date]
-        );
-        res.send(`${selectedCard} ${cardNumber}/${totalCards}`);
+        await pool.query("INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)", [username, selectedCard, date]);
+        res.send(${selectedCard});
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Speichern der Karte");
@@ -393,5 +362,5 @@ app.get('/random/:username', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server läuft auf Port ${port}`);
+    console.log(Server läuft auf Port ${port});
 });
