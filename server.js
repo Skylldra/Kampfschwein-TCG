@@ -68,7 +68,7 @@ function generateAlbumHtml(ownedCards, genIndex) {
     return cards.map((card, index) => {
         const cardNumber = String(startIndex + index).padStart(2, '0');
         const isOwned = ownedCards.has(card);
-        const imgSrc = `/cards/${cardNumber}${isOwned ? '' : '_blurred'}.png`;
+        const imgSrc = `/cards/${cardNumber}${isOwned ? '' : '_blurred'}.png`;  // ✅ KORREKTE VERSION
 
         const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
         const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
