@@ -26,11 +26,11 @@ const generations = [
         { name: "König Schweinchen", rarity: 1 },
         { name: "Truckerschwein", rarity: 1 },
         { name: "Doktor Schwein", rarity: 1 },
-        { name: "Captain Schweinchen", rarity: 1 },
-        { name: "Magierschwein", rarity: 1 },
-        { name: "Boss Schwein", rarity: 1 },
-        { name: "Feuerwehr Schwein", rarity: 1 },
-        { name: "Alien Schwein", rarity: 1 },
+        { name: "Captain Schweinchen", rarity: 2 },
+        { name: "Magierschwein", rarity: 2 },
+        { name: "Boss Schwein", rarity: 3 },
+        { name: "Feuerwehr Schwein", rarity: 3 },
+        { name: "Alien Schwein", rarity: 4 },
         { name: "Zukunft Schwein", rarity: 5 }
     ],
     [ // Generation 2
@@ -40,11 +40,11 @@ const generations = [
         { name: "Ritter-Schwein", rarity: 1 },
         { name: "Detektiv-Schwein", rarity: 1 },
         { name: "Dino-Schwein", rarity: 1 },
-        { name: "Pharao-Schwein", rarity: 1 },
-        { name: "Wikinger-Schwein", rarity: 1 },
-        { name: "Cowboy-Schwein", rarity: 1 },
-        { name: "Superheld-Schwein", rarity: 1 },
-        { name: "Samurai-Schwein", rarity: 1 },
+        { name: "Pharao-Schwein", rarity: 2 },
+        { name: "Wikinger-Schwein", rarity: 2 },
+        { name: "Cowboy-Schwein", rarity: 3 },
+        { name: "Superheld-Schwein", rarity: 3 },
+        { name: "Samurai-Schwein", rarity: 4 },
         { name: "Geister-Schwein", rarity: 5 }
     ],
     [ // Generation 3
@@ -54,11 +54,11 @@ const generations = [
         { name: "Roboter-Schwein", rarity: 1 },
         { name: "Zombie-Schwein", rarity: 1 },
         { name: "Teufels-Schwein", rarity: 1 },
-        { name: "Engel-Schwein", rarity: 1 },
-        { name: "Hexen-Schwein", rarity: 1 },
-        { name: "Gladiator-Schwein", rarity: 1 },
-        { name: "Alien-König", rarity: 1 },
-        { name: "Drachen-Schwein", rarity: 1 },
+        { name: "Engel-Schwein", rarity: 2 },
+        { name: "Hexen-Schwein", rarity: 2 },
+        { name: "Gladiator-Schwein", rarity: 3 },
+        { name: "Alien-König", rarity: 3 },
+        { name: "Drachen-Schwein", rarity: 4 },
         { name: "Neon-Schwein", rarity: 5 }
     ]
 ];
