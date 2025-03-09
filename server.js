@@ -21,7 +21,10 @@ app.use('/cards', express.static(path.join(__dirname, 'cards'), {
     }
 }));
 
-app.use(express.static(path.join(__dirname))); // Macht background.png verfügbar
+app.use('/cards', express.static(path.join(__dirname, 'cards'), {
+    maxAge: '30d',  // Bilder für 30 Tage cachen
+    immutable: true  // Verhindert unnötige Neuladungen
+}));
 
 // Karten nach Generationen geordnet mit Seltenheiten
 // Seltenheiten: 1 = Common, 2 = Uncommon, 3 = Rare, 4 = Epic, 5 = Legendary
