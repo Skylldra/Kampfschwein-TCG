@@ -34,32 +34,32 @@ const generations = [
         { name: "Zukunft Schwein", rarity: 5 }
     ],
     [ // Generation 2
-        { name: "Cyber-Schwein", rarity: 1 },
-        { name: "Ninja-Schwein", rarity: 1 },
-        { name: "Piratenschwein", rarity: 1 },
-        { name: "Ritter-Schwein", rarity: 1 },
-        { name: "Detektiv-Schwein", rarity: 1 },
-        { name: "Dino-Schwein", rarity: 1 },
-        { name: "Pharao-Schwein", rarity: 2 },
-        { name: "Wikinger-Schwein", rarity: 2 },
-        { name: "Cowboy-Schwein", rarity: 3 },
-        { name: "Superheld-Schwein", rarity: 3 },
-        { name: "Samurai-Schwein", rarity: 4 },
-        { name: "Geister-Schwein", rarity: 5 }
+        { name: "Bauer Schweinchen", rarity: 1 },
+        { name: "Spukschweinchen", rarity: 1 },
+        { name: "Pflanzenschwein", rarity: 1 },
+        { name: "Zombieschwein", rarity: 1 },
+        { name: "Sir Schweinchen", rarity: 1 },
+        { name: "Detektiv Schweinchen", rarity: 1 },
+        { name: "Ninja Schwein", rarity: 2 },
+        { name: "Schweinaldo", rarity: 2 },
+        { name: "Agent Oink", rarity: 3 },
+        { name: "Wrestlingschwein", rarity: 3 },
+        { name: "Schnorchelschwein", rarity: 4 },
+        { name: "Streamschwein", rarity: 5 }
     ],
     [ // Generation 3
-        { name: "Gamer-Schwein", rarity: 1 },
-        { name: "Steampunk-Schwein", rarity: 1 },
-        { name: "Clown-Schwein", rarity: 1 },
-        { name: "Roboter-Schwein", rarity: 1 },
-        { name: "Zombie-Schwein", rarity: 1 },
-        { name: "Teufels-Schwein", rarity: 1 },
-        { name: "Engel-Schwein", rarity: 2 },
-        { name: "Hexen-Schwein", rarity: 2 },
-        { name: "Gladiator-Schwein", rarity: 3 },
-        { name: "Alien-König", rarity: 3 },
-        { name: "Drachen-Schwein", rarity: 4 },
-        { name: "Neon-Schwein", rarity: 5 }
+        { name: "Sergeant Grunzer", rarity: 1 },
+        { name: "Chefkoch Baconelli", rarity: 1 },
+        { name: "Engelschwein", rarity: 1 },
+        { name: "Teufelsschwein", rarity: 1 },
+        { name: "Gärtnerschwein", rarity: 1 },
+        { name: "Superschwein", rarity: 1 },
+        { name: "Schweinicus Maximus", rarity: 2 },
+        { name: "Drachenschwein", rarity: 2 },
+        { name: "Bacon Rockham", rarity: 3 },
+        { name: "Oinktron 3000", rarity: 3 },
+        { name: "Mutantenschwein", rarity: 4 },
+        { name: "Schweinhorn", rarity: 5 }
     ]
 ];
 const totalGenerations = generations.length;
