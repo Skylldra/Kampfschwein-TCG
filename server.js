@@ -1,4 +1,4 @@
-//Letzter Meilenstein ohne Austausch der Karten bei Generationswechsel
+//Letzter Meilenstein ohne Austausch der Karten bei wechseln der Generation
 const express = require('express');
 const { Pool } = require('pg');
 require('dotenv').config();
