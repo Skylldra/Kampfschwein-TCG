@@ -145,22 +145,6 @@ app.get('/:username', async (req, res) => {
                             <p style="${borderStyle}">${displayText}</p>
                         </div>`;
             }).join('');
-            
-            document.addEventListener("DOMContentLoaded", function() {
-    let lazyImages = document.querySelectorAll("img.lazyload");
-    let observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                let img = entry.target;
-                img.src = img.dataset.src;
-                img.classList.remove("lazyload");
-            }
-        });
-    });
-
-    lazyImages.forEach(img => observer.observe(img));
-});
-
 
             // Gib HTML für diese Generation mit verstecktem Display für alle außer der ersten zurück
             return `<div id="gen-${genNumber}" class="album-grid" style="display: ${genIndex === 0 ? 'grid' : 'none'}">${cardsHtml}</div>`;
@@ -439,21 +423,21 @@ app.get('/:username', async (req, res) => {
     let currentGen = 1;
     const totalGenerations = ${totalGenerations};
 
-    // Diese Funktion ersetzt die src-Attribute mit data-src beim Laden der Seite
+    // Lazy Loading für Bilder
     function setupLazyLoading() {
-        // Für alle Generationen außer der ersten (die sofort angezeigt wird)
-        for (let i = 2; i <= totalGenerations; i++) {
-            const genElement = document.getElementById("gen-" + i);
-            if (genElement) {
-                const images = genElement.querySelectorAll('.card-img');
-                images.forEach(img => {
-                    // Speichere die eigentliche Bild-URL in einem data-Attribut
-                    img.setAttribute('data-src', img.src);
-                    // Setze ein Platzhalterbild oder transparent
-                    img.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-                });
-            }
-        }
+        let lazyImages = document.querySelectorAll("img.lazyload");
+        let observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    let img = entry.target;
+                    img.src = img.dataset.src;
+                    img.classList.remove("lazyload");
+                    observer.unobserve(img); // Bild entladen, um Leistung zu verbessern
+                }
+            });
+        });
+
+        lazyImages.forEach(img => observer.observe(img));
     }
 
     function prevGen() {
@@ -481,13 +465,13 @@ app.get('/:username', async (req, res) => {
                 const isCurrentGen = i === currentGen;
                 genElement.style.display = isCurrentGen ? 'grid' : 'none';
                 
-                // Wenn es die aktuelle Generation ist, lade die Bilder
+                // Falls neue Generation geladen wird, Lazy Loading aktivieren
                 if (isCurrentGen) {
-                    const images = genElement.querySelectorAll('.card-img');
+                    const images = genElement.querySelectorAll('.card-img.lazyload');
                     images.forEach(img => {
-                        // Wenn das Bild ein data-src hat, lade es jetzt
                         if (img.getAttribute('data-src')) {
                             img.src = img.getAttribute('data-src');
+                            img.classList.remove("lazyload");
                         }
                     });
                 }
@@ -503,9 +487,11 @@ app.get('/:username', async (req, res) => {
     function closeEnlarged() {
         document.getElementById('overlay').style.display = 'none';
     }
-    
-    // Führe das Setup beim Laden der Seite aus
-    document.addEventListener('DOMContentLoaded', setupLazyLoading);
+
+    // Lazy Loading beim Laden der Seite aktivieren
+    document.addEventListener('DOMContentLoaded', () => {
+        setupLazyLoading();
+    });
 </script>
 </body>
 </html>`);
