@@ -323,20 +323,18 @@ function generateAlbumHtml(ownedCards, genIndex) {
 
         function updateCards() {
     const genIndex = currentGen - 1; // Index anpassen (Gen 1 = Index 0)
-    const cards = generations[genIndex]; // Karten der gewählten Generation
     const startIndex = genIndex * 12 + 1; // Richtige Nummerierung für Bilder
 
-    const albumHtml = cards.map((card, index) => {
-        const cardNumber = String(startIndex + index).padStart(2, '0');
-        const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
+    fetch(window.location.pathname) // Ruft die aktuelle Seite erneut auf
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newCards = doc.querySelector('.album-grid').innerHTML;
+            document.querySelector('.album-grid').innerHTML = newCards;
+        });
 
-        return `<div class='card-container' onclick='enlargeCard(this)'>
-                    <img src='${imgSrc}' class='card-img'>
-                    <p>${card} ${cardNumber}/12</p>
-                </div>`;
-    }).join('');
-
-    document.querySelector('.album-grid').innerHTML = albumHtml;
+    document.getElementById("gen-text").innerText = `Gen. ${currentGen}`;
 }
 
         function enlargeCard(card) {
