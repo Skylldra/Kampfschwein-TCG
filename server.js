@@ -16,25 +16,71 @@ const pool = new Pool({
 app.use('/cards', express.static(path.join(__dirname, 'cards')));
 app.use(express.static(path.join(__dirname))); // Macht background.png verfügbar
 
-// Karten nach Generationen geordnet
+// Karten nach Generationen geordnet mit Seltenheiten
+// Seltenheiten: 1 = Common, 2 = Uncommon, 3 = Rare, 4 = Epic, 5 = Legendary
 const generations = [
     [ // Generation 1
-        "Vampirschwein", "Astronautenschwein", "Officer Schwein", "König Schweinchen",
-        "Truckerschwein", "Doktor Schwein", "Captain Schweinchen", "Magierschwein",
-        "Boss Schwein", "Feuerwehr Schwein", "Alien Schwein", "Zukunft Schwein"
+        { name: "Vampirschwein", rarity: 3 },
+        { name: "Astronautenschwein", rarity: 2 },
+        { name: "Officer Schwein", rarity: 1 },
+        { name: "König Schweinchen", rarity: 4 },
+        { name: "Truckerschwein", rarity: 1 },
+        { name: "Doktor Schwein", rarity: 2 },
+        { name: "Captain Schweinchen", rarity: 2 },
+        { name: "Magierschwein", rarity: 3 },
+        { name: "Boss Schwein", rarity: 4 },
+        { name: "Feuerwehr Schwein", rarity: 1 },
+        { name: "Alien Schwein", rarity: 3 },
+        { name: "Zukunft Schwein", rarity: 5 }
     ],
     [ // Generation 2
-        "Cyber-Schwein", "Ninja-Schwein", "Piratenschwein", "Ritter-Schwein",
-        "Detektiv-Schwein", "Dino-Schwein", "Pharao-Schwein", "Wikinger-Schwein",
-        "Cowboy-Schwein", "Superheld-Schwein", "Samurai-Schwein", "Geister-Schwein"
+        { name: "Cyber-Schwein", rarity: 3 },
+        { name: "Ninja-Schwein", rarity: 3 },
+        { name: "Piratenschwein", rarity: 2 },
+        { name: "Ritter-Schwein", rarity: 2 },
+        { name: "Detektiv-Schwein", rarity: 1 },
+        { name: "Dino-Schwein", rarity: 4 },
+        { name: "Pharao-Schwein", rarity: 4 },
+        { name: "Wikinger-Schwein", rarity: 2 },
+        { name: "Cowboy-Schwein", rarity: 1 },
+        { name: "Superheld-Schwein", rarity: 3 },
+        { name: "Samurai-Schwein", rarity: 3 },
+        { name: "Geister-Schwein", rarity: 5 }
     ],
     [ // Generation 3
-        "Gamer-Schwein", "Steampunk-Schwein", "Clown-Schwein", "Roboter-Schwein",
-        "Zombie-Schwein", "Teufels-Schwein", "Engel-Schwein", "Hexen-Schwein",
-        "Gladiator-Schwein", "Alien-König", "Drachen-Schwein", "Neon-Schwein"
+        { name: "Gamer-Schwein", rarity: 1 },
+        { name: "Steampunk-Schwein", rarity: 3 },
+        { name: "Clown-Schwein", rarity: 2 },
+        { name: "Roboter-Schwein", rarity: 3 },
+        { name: "Zombie-Schwein", rarity: 2 },
+        { name: "Teufels-Schwein", rarity: 4 },
+        { name: "Engel-Schwein", rarity: 4 },
+        { name: "Hexen-Schwein", rarity: 3 },
+        { name: "Gladiator-Schwein", rarity: 2 },
+        { name: "Alien-König", rarity: 5 },
+        { name: "Drachen-Schwein", rarity: 4 },
+        { name: "Neon-Schwein", rarity: 1 }
     ]
 ];
 const totalGenerations = generations.length;
+
+// Seltenheits-zu-Gewichtung-Mapping
+const rarityWeights = {
+    1: 40,  // Common: sehr häufig
+    2: 30,  // Uncommon: häufig
+    3: 15,  // Rare: selten
+    4: 10,  // Epic: sehr selten
+    5: 5    // Legendary: extrem selten
+};
+
+// Farben für die Seltenheiten
+const rarityColors = {
+    1: "#A0A0A0", // Common: Grau
+    2: "#209020", // Uncommon: Grün
+    3: "#2050FF", // Rare: Blau
+    4: "#A020F0", // Epic: Lila
+    5: "#FFA500"  // Legendary: Orange/Gold
+};
 
 // Datum in deutsches Format umwandeln
 function formatDate(dateString) {
@@ -57,6 +103,14 @@ app.get('/:username', async (req, res) => {
 
         const ownedCards = new Map(result.rows.map(row => [row.card_name, { count: row.count, date: formatDate(row.first_obtained) }]));
 
+        // Erstelle ein Mapping von Kartennamen zu Seltenheiten
+        const cardRarities = new Map();
+        generations.forEach(gen => {
+            gen.forEach(card => {
+                cardRarities.set(card.name, card.rarity);
+            });
+        });
+
         // Alle Generationen durchlaufen und HTML für jede Generation erstellen
         const generationHtml = generations.map((genCards, genIndex) => {
             const genNumber = genIndex + 1;
@@ -64,17 +118,24 @@ app.get('/:username', async (req, res) => {
             
             // Erstelle HTML für jede Karte in dieser Generation
             const cardsHtml = genCards.map((card, cardIndex) => {
+                const cardName = card.name;
+                const rarity = card.rarity;
+                const rarityColor = rarityColors[rarity];
+                
                 const cardNumber = String(startCardNumber + cardIndex).padStart(2, '0');
-                const isOwned = ownedCards.has(card);
+                const isOwned = ownedCards.has(cardName);
                 const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
 
-                const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
-                const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
-                const displayText = isOwned ? `${countText}${card} ${cardIndex + 1}/${genCards.length}${dateText}` : `??? ${cardIndex + 1}/${genCards.length}`;
+                const countText = isOwned ? `${ownedCards.get(cardName).count}x ` : "";
+                const dateText = isOwned ? `<br>${ownedCards.get(cardName).date}` : "";
+                const displayText = isOwned ? `${countText}${cardName} ${cardIndex + 1}/${genCards.length}${dateText}` : `??? ${cardIndex + 1}/${genCards.length}`;
+
+                // Füge einen farbigen Rand basierend auf der Seltenheit hinzu
+                const borderStyle = `border: 2px solid ${rarityColor};`;
 
                 return `<div class='card-container' onclick='enlargeCard(this)'>
                             <img src='${imgSrc}' class='card-img'>
-                            <p>${displayText}</p>
+                            <p style="${borderStyle}">${displayText}</p>
                         </div>`;
             }).join('');
 
@@ -175,7 +236,6 @@ app.get('/:username', async (req, res) => {
 
         .card-container p { 
             background: white; 
-            border: 2px solid #6016FF;
             padding: 5px;
             margin-top: 5px;
             width: fit-content;
@@ -261,6 +321,30 @@ app.get('/:username', async (req, res) => {
             text-shadow: 0 0 5px #6016FF, 0 0 10px #6016FF;
         }
 
+        /* Seltenheits-Legende */
+        .rarity-legend {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .rarity-item {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .rarity-color {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+
     </style>
 </head>
 <body>
@@ -281,6 +365,30 @@ app.get('/:username', async (req, res) => {
     </div>
 
     <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
+    
+    <!-- Seltenheits-Legende -->
+    <div class="rarity-legend">
+        <div class="rarity-item">
+            <div class="rarity-color" style="background-color: #A0A0A0;"></div>
+            <span>Common</span>
+        </div>
+        <div class="rarity-item">
+            <div class="rarity-color" style="background-color: #209020;"></div>
+            <span>Uncommon</span>
+        </div>
+        <div class="rarity-item">
+            <div class="rarity-color" style="background-color: #2050FF;"></div>
+            <span>Rare</span>
+        </div>
+        <div class="rarity-item">
+            <div class="rarity-color" style="background-color: #A020F0;"></div>
+            <span>Epic</span>
+        </div>
+        <div class="rarity-item">
+            <div class="rarity-color" style="background-color: #FFA500;"></div>
+            <span>Legendary</span>
+        </div>
+    </div>
     
     <!-- Generierte Karten für jede Generation werden hier eingefügt -->
     ${generationHtml}
@@ -354,8 +462,14 @@ app.get('/random/:username', async (req, res) => {
     const username = req.params.username;
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
+    // Erstelle eine flache Liste aller Karten mit ihren Seltenheiten
     const allCards = generations.flat();
-    const probabilities = allCards.map(card => ({ card, weight: card.includes("Zukunft") ? 5 : 15 }));
+    
+    // Berechne Gewichtungen basierend auf Seltenheit
+    const probabilities = allCards.map(card => ({ 
+        card: card.name, 
+        weight: rarityWeights[card.rarity] || 15 
+    }));
 
     const totalWeight = probabilities.reduce((sum, item) => sum + item.weight, 0);
     let threshold = Math.random() * totalWeight;
