@@ -1,4 +1,3 @@
-//Letzter Meilenstein ohne Austausch der Karten bei wechseln der Generation
 const express = require('express');
 const { Pool } = require('pg');
 require('dotenv').config();
@@ -58,23 +57,30 @@ app.get('/:username', async (req, res) => {
 
         const ownedCards = new Map(result.rows.map(row => [row.card_name, { count: row.count, date: formatDate(row.first_obtained) }]));
 
-        const currentGenIndex = 0; // Standardmäßig Gen 1
-const cards = generations[currentGenIndex]; // Karten der aktuellen Generation
+        // Alle Generationen durchlaufen und HTML für jede Generation erstellen
+        const generationHtml = generations.map((genCards, genIndex) => {
+            const genNumber = genIndex + 1;
+            const startCardNumber = genIndex * 12 + 1; // Berechne die Startnummer für diese Generation
+            
+            // Erstelle HTML für jede Karte in dieser Generation
+            const cardsHtml = genCards.map((card, cardIndex) => {
+                const cardNumber = String(startCardNumber + cardIndex).padStart(2, '0');
+                const isOwned = ownedCards.has(card);
+                const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
 
-const albumHtml = cards.map((card, index) => {
-    const cardNumber = String(index + 1).padStart(2, '0');
-    const isOwned = ownedCards.has(card);
-    const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
+                const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
+                const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
+                const displayText = isOwned ? `${countText}${card} ${cardIndex + 1}/${genCards.length}${dateText}` : `??? ${cardIndex + 1}/${genCards.length}`;
 
-    const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
-    const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
-    const displayText = isOwned ? `${countText}${card} ${cardNumber}/${cards.length}${dateText}` : `??? ${cardNumber}/${cards.length}`;
+                return `<div class='card-container' onclick='enlargeCard(this)'>
+                            <img src='${imgSrc}' class='card-img'>
+                            <p>${displayText}</p>
+                        </div>`;
+            }).join('');
 
-    return `<div class='card-container' onclick='enlargeCard(this)'>
-                <img src='${imgSrc}' class='card-img'>
-                <p>${displayText}</p>
-            </div>`;
-}).join('');
+            // Gib HTML für diese Generation mit verstecktem Display für alle außer der ersten zurück
+            return `<div id="gen-${genNumber}" class="album-grid" style="display: ${genIndex === 0 ? 'grid' : 'none'}">${cardsHtml}</div>`;
+        }).join('');
 
         res.send(`<!DOCTYPE html>
 <html lang='de'>
@@ -276,9 +282,8 @@ const albumHtml = cards.map((card, index) => {
 
     <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
     
-    <div class='album-grid' id="cards-container">
-        ${albumHtml}
-    </div>
+    <!-- Generierte Karten für jede Generation werden hier eingefügt -->
+    ${generationHtml}
 
     <!-- Generationen Navigation -->
     <div class="generation-controls">
@@ -298,27 +303,33 @@ const albumHtml = cards.map((card, index) => {
 
     <script>
         let currentGen = 1;
-        const totalGenerations = 3;
+        const totalGenerations = ${totalGenerations};
 
         function prevGen() {
             if (currentGen > 1) {
                 currentGen--;
-                document.getElementById("gen-text").innerText = "Gen. " + currentGen;
-                updateCards();
+                updateGenDisplay();
             }
         }
 
         function nextGen() {
             if (currentGen < totalGenerations) {
                 currentGen++;
-                document.getElementById("gen-text").innerText = "Gen. " + currentGen;
-                updateCards();
+                updateGenDisplay();
             }
         }
 
-        function updateCards() {
-            // Hier wird später die Kartenliste dynamisch geändert
-            console.log("Aktuelle Generation: " + currentGen);
+        function updateGenDisplay() {
+            // Aktualisiere den Generationstext
+            document.getElementById("gen-text").innerText = "Gen. " + currentGen;
+            
+            // Verstecke alle Generationen und zeige nur die aktuelle
+            for (let i = 1; i <= totalGenerations; i++) {
+                const genElement = document.getElementById("gen-" + i);
+                if (genElement) {
+                    genElement.style.display = (i === currentGen) ? 'grid' : 'none';
+                }
+            }
         }
 
         function enlargeCard(card) {
