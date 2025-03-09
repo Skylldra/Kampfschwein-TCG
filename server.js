@@ -57,8 +57,29 @@ app.get('/:username', async (req, res) => {
 
         const ownedCards = new Map(result.rows.map(row => [row.card_name, { count: row.count, date: formatDate(row.first_obtained) }]));
 
-        const currentGenIndex = 0; // Standardmäßig Gen 1
-const cards = generations[currentGenIndex]; // Karten der aktuellen Generation
+        let currentGenIndex = 0; // Standardmäßig Gen 1
+
+function generateAlbumHtml(ownedCards, genIndex) {
+    const cards = generations[genIndex];
+    const startIndex = genIndex * 12 + 1; // Berechnet die richtige Karten-ID (1-12, 13-24, 25-36)
+
+    return cards.map((card, index) => {
+        const cardNumber = String(startIndex + index).padStart(2, '0');
+        const isOwned = ownedCards.has(card);
+        const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
+
+        const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
+        const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
+        const displayText = isOwned ? `${countText}${card} ${cardNumber}/12${dateText}` : `??? ${cardNumber}/12`;
+
+        return `<div class='card-container' onclick='enlargeCard(this)'>
+                    <img src='${imgSrc}' class='card-img'>
+                    <p>${displayText}</p>
+                </div>`;
+    }).join('');
+}
+
+let albumHtml = generateAlbumHtml(ownedCards, currentGenIndex);
 
 const albumHtml = cards.map((card, index) => {
     const cardNumber = String(index + 1).padStart(2, '0');
@@ -316,9 +337,15 @@ const albumHtml = cards.map((card, index) => {
         }
 
         function updateCards() {
-            // Hier wird später die Kartenliste dynamisch geändert
-            console.log("Aktuelle Generation: " + currentGen);
-        }
+    fetch(window.location.pathname) // Ruft die aktuelle Seite erneut auf
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newCards = doc.querySelector('.album-grid').innerHTML;
+            document.querySelector('.album-grid').innerHTML = newCards;
+        });
+}
 
         function enlargeCard(card) {
             document.getElementById('overlay-img').src = card.querySelector('img').src;
