@@ -60,23 +60,24 @@ app.get('/:username', async (req, res) => {
         let currentGenIndex = 0; // Standardmäßig Gen 1
 
         function generateAlbumHtml(ownedCards, genIndex) {
-            const cards = generations[genIndex];
-            const startIndex = genIndex * 12 + 1; // Berechnet die richtige Karten-ID (1-12, 13-24, 25-36)
+    const cards = generations[genIndex];
+    const startIndex = genIndex * 12 + 1; // Berechnet die richtige Karten-ID (1-12, 13-24, 25-36)
 
-            return cards.map((card, index) => {
-                const cardNumber = String(startIndex + index).padStart(2, '0');
-                const isOwned = ownedCards.has(card);
-                const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
+    return cards.map((card, index) => {
+        const cardNumber = String(startIndex + index).padStart(2, '0');
+        const isOwned = ownedCards.has(card);
+        const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
 
-                const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
-                const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
-                const displayText = isOwned ? `${countText}${card} ${cardNumber}/12${dateText}` : `??? ${cardNumber}/12`;
+        const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
+        const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
+        const displayText = isOwned ? `${countText}${card} ${cardNumber}/12${dateText}` : `??? ${cardNumber}/12`;
 
-                return `<div class='card-container' onclick='enlargeCard(this)'>
-                            <img src='${imgSrc}' class='card-img'>
-                            <p>${displayText}</p>
-                        </div>`;
-            }).join('');
+        return `<div class='card-container' onclick='enlargeCard(this)'>
+                    <img src='${imgSrc}' class='card-img'>
+                    <p>${displayText}</p>
+                </div>`;
+    }).join(''); // ✅ Diese Klammer sorgt für den richtigen Abschluss der Funktion!
+}
 
         res.send(`<!DOCTYPE html>
 <html lang='de'>
