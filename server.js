@@ -134,10 +134,26 @@ app.get('/:username', async (req, res) => {
                 const borderStyle = `border: 2px solid ${rarityColor};`;
 
                 return `<div class='card-container' onclick='enlargeCard(this)'>
-                            <img src='${imgSrc}' class='card-img'>
+                            <img data-src='${imgSrc}' class='card-img lazyload' loading="lazy">
                             <p style="${borderStyle}">${displayText}</p>
                         </div>`;
             }).join('');
+            
+            document.addEventListener("DOMContentLoaded", function() {
+    let lazyImages = document.querySelectorAll("img.lazyload");
+    let observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                let img = entry.target;
+                img.src = img.dataset.src;
+                img.classList.remove("lazyload");
+            }
+        });
+    });
+
+    lazyImages.forEach(img => observer.observe(img));
+});
+
 
             // Gib HTML für diese Generation mit verstecktem Display für alle außer der ersten zurück
             return `<div id="gen-${genNumber}" class="album-grid" style="display: ${genIndex === 0 ? 'grid' : 'none'}">${cardsHtml}</div>`;
