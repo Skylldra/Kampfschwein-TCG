@@ -246,6 +246,13 @@ app.get('/:username', async (req, res) => {
         Developer: x_MeduZa_
     </div>
 
+    <!-- Vor- und Zurück Button + Gen-Text -->
+    <div class="generation-controls">
+        <button class="gen-button" onclick="prevGen()">← Zurück</button>
+        <span id="gen-text" class="gen-text">Gen. 1</span>
+        <button class="gen-button" onclick="nextGen()">Vor →</button>
+    </div>
+
     <script>
     function enlargeCard(card) {
         const imgSrc = card.querySelector('img').src;
@@ -307,6 +314,30 @@ app.get('/:username', async (req, res) => {
         res.status(500).send("Fehler beim Abrufen der Karten");
     }
 });
+
+let currentGen = 1;
+const totalGenerations = 3; // Falls es mehr als eine Generation gibt, anpassen
+
+function prevGen() {
+    if (currentGen > 1) {
+        currentGen--;
+        document.getElementById("gen-text").innerText = `Gen. ${currentGen}`;
+        updateCards();
+    }
+}
+
+function nextGen() {
+    if (currentGen < totalGenerations) {
+        currentGen++;
+        document.getElementById("gen-text").innerText = `Gen. ${currentGen}`;
+        updateCards();
+    }
+}
+
+function updateCards() {
+    // Diese Funktion sollte die Karten entsprechend der aktuellen Generation neu laden
+    console.log(`Lade Karten für Generation ${currentGen}`);
+}
 
 app.get('/random/:username', async (req, res) => {
     const username = req.params.username;
