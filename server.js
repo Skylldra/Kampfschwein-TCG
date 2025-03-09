@@ -13,7 +13,14 @@ const pool = new Pool({
 });
 
 // Statische Dateien bereitstellen
-app.use('/cards', express.static(path.join(__dirname, 'cards')));
+app.use('/cards', express.static(path.join(__dirname, 'cards'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.png') || path.endsWith('.webp')) {
+            res.setHeader('Cache-Control', 'public, max-age=2592000'); // 30 Tage Cache (30 * 24 * 60 * 60)
+        }
+    }
+}));
+
 app.use(express.static(path.join(__dirname))); // Macht background.png verfügbar
 
 // Karten nach Generationen geordnet mit Seltenheiten
