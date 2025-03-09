@@ -59,7 +59,9 @@ app.get('/:username', async (req, res) => {
 
         let currentGenIndex = 0; // Standardmäßig Gen 1
 
-        function generateAlbumHtml(ownedCards, genIndex) {
+        let albumHtml = generateAlbumHtml(ownedCards, currentGenIndex);
+
+function generateAlbumHtml(ownedCards, genIndex) {
     const cards = generations[genIndex];
     const startIndex = genIndex * 12 + 1; // Berechnet die richtige Karten-ID (1-12, 13-24, 25-36)
 
@@ -76,7 +78,7 @@ app.get('/:username', async (req, res) => {
                     <img src='${imgSrc}' class='card-img'>
                     <p>${displayText}</p>
                 </div>`;
-    }).join(''); // ✅ Diese Klammer sorgt für den richtigen Abschluss der Funktion!
+    }).join('');
 }
 
         res.send(`<!DOCTYPE html>
