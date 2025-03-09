@@ -1,4 +1,3 @@
-//Letzter Meilenstein ohe Austausch der Karten bei Generationswechsel
 const express = require('express');
 const { Pool } = require('pg');
 require('dotenv').config();
@@ -49,41 +48,44 @@ app.get('/:username', async (req, res) => {
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
     try {
-        const result = await pool.query(`
-    SELECT card_name, COUNT(*) AS count, MIN(obtained_date) AS first_obtained 
-    FROM user_cards 
-    WHERE username = $1 OR LOWER(username) = LOWER($1) 
-    GROUP BY card_name
-`, [username]);
-
+        const result = await pool.query(
+            SELECT card_name, COUNT(*) AS count, MIN(obtained_date) AS first_obtained 
+            FROM user_cards 
+            WHERE username = $1 OR LOWER(username) = LOWER($1) 
+            GROUP BY card_name
+        , [username]);
 
         const ownedCards = new Map(result.rows.map(row => [row.card_name, { count: row.count, date: formatDate(row.first_obtained) }]));
 
-        const currentGenIndex = 0; // Standardmäßig Gen 1
-const cards = generations[currentGenIndex]; // Karten der aktuellen Generation
+        let currentGenIndex = 0; // Standardmäßig Gen 1
 
-const albumHtml = cards.map((card, index) => {
-    const cardNumber = String(index + 1).padStart(2, "0");
-    const isOwned = ownedCards.has(card);
-    const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
+        let albumHtml = generateAlbumHtml(ownedCards, currentGenIndex);
 
-    const countText = isOwned ? `${ownedCards.get(card).count}x ` : "";
-    const dateText = isOwned ? `<br>${ownedCards.get(card).date}` : "";
-    const displayText = isOwned ? `${countText}${card} ${cardNumber}/${cards.length}${dateText}` : `??? ${cardNumber}/${cards.length}`;
+function generateAlbumHtml(ownedCards, genIndex) {
+    const cards = generations[genIndex];
+    const startIndex = genIndex * 12 + 1; // Berechnet die richtige Karten-ID (1-12, 13-24, 25-36)
 
-    return `
-        <div class="card-container" onclick="enlargeCard(this)">
-            <img src="${imgSrc}" class="card-img">
-            <p>${displayText}</p>
-        </div>
-    `;
-}).join("");
+    return cards.map((card, index) => {
+        const cardNumber = String(startIndex + index).padStart(2, '0');
+        const isOwned = ownedCards.has(card);
+        const imgSrc = isOwned ? /cards/${cardNumber}.png : /cards/${cardNumber}_blurred.png;
 
-        res.send(`<!DOCTYPE html>
-<html lang="de">
+        const countText = isOwned ? ${ownedCards.get(card).count}x  : "";
+        const dateText = isOwned ? <br>${ownedCards.get(card).date} : "";
+        const displayText = isOwned ? ${countText}${card} ${cardNumber}/12${dateText} : ??? ${cardNumber}/12;
+
+        return <div class='card-container' onclick='enlargeCard(this)'>
+                    <img src='${imgSrc}' class='card-img'>
+                    <p>${displayText}</p>
+                </div>;
+    }).join('');
+}
+
+        res.send(<!DOCTYPE html>
+<html lang='de'>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>Schweinchen-Sammelalbum von ${username}</title>
     <style>
         body { 
@@ -277,9 +279,9 @@ const albumHtml = cards.map((card, index) => {
         <img src="/streamplan.png" alt="Streamplan">
     </div>
 
-    <h1 class="album-title">Schweinchen-Sammelalbum von ${username}</h1>
+    <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
     
-    <div class="album-grid" id="cards-container">
+    <div class='album-grid' id="cards-container">
         ${albumHtml}
     </div>
 
@@ -290,8 +292,8 @@ const albumHtml = cards.map((card, index) => {
         <button class="gen-button" onclick="nextGen()">Vor →</button>
     </div>
 
-    <div id="overlay" onclick="closeEnlarged()">
-        <img id="overlay-img">
+    <div id='overlay' onclick='closeEnlarged()'>
+        <img id='overlay-img'>
     </div>
 
     <!-- Developer Box unten links -->
@@ -320,8 +322,15 @@ const albumHtml = cards.map((card, index) => {
         }
 
         function updateCards() {
-            console.log("Aktuelle Generation: " + currentGen);
-        }
+    fetch(window.location.pathname) // Ruft die aktuelle Seite erneut auf
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newCards = doc.querySelector('.album-grid').innerHTML;
+            document.querySelector('.album-grid').innerHTML = newCards;
+        });
+}
 
         function enlargeCard(card) {
             document.getElementById('overlay-img').src = card.querySelector('img').src;
@@ -334,7 +343,7 @@ const albumHtml = cards.map((card, index) => {
     </script>
 
 </body>
-</html>`);
+</html>);
     } catch (err) {
         console.error(err);
         res.status(500).send("Fehler beim Abrufen der Karten");
