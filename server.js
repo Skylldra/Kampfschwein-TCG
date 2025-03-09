@@ -407,7 +407,7 @@ app.get('/:username', async (req, res) => {
     <div class="generation-controls">
         <button class="gen-button" onclick="prevGen()">← Zurück</button>
         <span id="gen-text" class="gen-text">Gen. 1</span>
-        <button class="gen-button" onclick="nextGen()">Vor →</button>
+        <button class="gen-button" onclick="nextGen()">Nächste Seite →</button>
     </div>
 
     <div id='overlay' onclick='closeEnlarged()'>
