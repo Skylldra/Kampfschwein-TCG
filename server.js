@@ -323,11 +323,14 @@ app.get('/:username', async (req, res) => {
 
         /* Seltenheits-Legende */
         .rarity-legend {
-            margin-top: 20px;
+            margin: 20px auto;  /* Von margin-top zu margin geändert */
+            margin-bottom: 40px; /* Mehr Abstand nach unten hinzugefügt */
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
             gap: 10px;
+            position: relative; /* Position hinzugefügt */
+            z-index: 5; /* Z-Index hinzugefügt, damit sie über dem Hintergrund liegt */
         }
 
         .rarity-item {
