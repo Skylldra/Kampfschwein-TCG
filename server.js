@@ -177,26 +177,27 @@ app.get('/:username', async (req, res) => {
 
         /* Twitch-Player & Streamplan */
         .twitch-wrapper, .streamplan-wrapper {
-            position: fixed;
-            top: 50%;
-            transform: translateY(-50%);
-            width: max(20vw, 400px);
-            height: calc(max(20vw, 400px) * 0.5625);
-            max-width: 35vw;
-            max-height: 35vh;
-            border-radius: 10px;
-            border: 3px solid #6016FF;
-            overflow: hidden;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: black;
-            transition: all 0.3s ease-in-out;
-        }
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: max(25vw, 450px);  /* Increased from 20vw, 400px */
+    height: calc(max(25vw, 450px) * 0.5625);
+    max-width: 42vw;  /* Increased from 35vw */
+    max-height: 45vh;  /* Increased from 35vh */
+    border-radius: 10px;
+    border: 3px solid #6016FF;
+    overflow: hidden;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: black;
+    transition: all 0.3s ease-in-out;
+}
 
-        .twitch-wrapper { left: 20px; }
-        .streamplan-wrapper { right: 20px; }
+        
+.twitch-wrapper { left: 15px; }  /* Reduced from 20px to get closer to edge */
+.streamplan-wrapper { right: 15px; }  /* Reduced from 20px to get closer to edge */
 
         .twitch-wrapper iframe, .streamplan-wrapper img {
             width: 100%;
