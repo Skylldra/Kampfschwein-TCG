@@ -174,15 +174,13 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player & Streamplan */
+        /* Twitch-Player & Streamplan - Feste Größe bei allen Zoom-Stufen */
         .twitch-wrapper, .streamplan-wrapper {
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            width: max(18vw, 300px);
-            height: calc(max(18vw, 300px) * 0.5625);
-            max-width: 350px;
-            max-height: 197px;
+            width: 320px;
+            height: 180px;
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
@@ -195,13 +193,11 @@ app.get('/:username', async (req, res) => {
         }
 
         .twitch-wrapper { 
-            left: 2vw; 
-            max-width: min(22vw, 350px);
+            left: 30px; 
         }
         
         .streamplan-wrapper { 
-            right: 2vw;
-            max-width: min(22vw, 350px);
+            right: 30px;
         }
 
         .twitch-wrapper iframe, .streamplan-wrapper img {
@@ -214,38 +210,12 @@ app.get('/:username', async (req, res) => {
             width: 100%;
             max-width: 900px;
             margin: 0 auto;
-            /* Provide space between side elements and content */
-            padding: 0 max(calc(25vw - 200px), 20px);
         }
 
-        /* Add responsive scaling for high zoom levels */
+        /* Content layout for different screen sizes */
         @media (min-width: 1900px) {
-            .twitch-wrapper, .streamplan-wrapper {
-                max-width: min(18vw, 350px);
-                max-height: min(10vw, 197px);
-            }
-            
-            .album-grid {
-                max-width: 60vw;
-                margin: 0 auto;
-            }
-        }
-
-        /* Scale better for high zoom */
-        @media (min-width: 2200px) {
-            .twitch-wrapper { left: max(2vw, 50px); }
-            .streamplan-wrapper { right: max(2vw, 50px); }
-        }
-
-        /* Improve side elements space on larger screens */
-        @media (max-width: 1400px) and (min-width: 1000px) {
-            .twitch-wrapper, .streamplan-wrapper {
-                max-width: min(15vw, 300px);
-                max-height: min(8.4vw, 169px);
-            }
-            
-            .album-grid {
-                padding: 0 max(calc(18vw - 100px), 10px);
+            .content-container {
+                max-width: 1100px;
             }
         }
 
@@ -259,10 +229,12 @@ app.get('/:username', async (req, res) => {
         /* Add additional container to fix content layout */
         .content-container {
             width: 100%;
-            max-width: min(1200px, 70vw);
+            max-width: 1000px;
             margin: 0 auto;
             position: relative;
             z-index: 5;
+            /* Ensure enough padding to prevent overlap with side elements */
+            padding: 0 20px;
         }
 
         .album-title { 
@@ -290,11 +262,10 @@ app.get('/:username', async (req, res) => {
             }
         }
 
-        /* Higher zooms: reduce columns to prevent overlap */
+        /* Konsistentes 3-Spalten-Layout bei allen Zoom-Stufen beibehalten */
         @media (min-width: 2000px) {
             .album-grid {
-                grid-template-columns: repeat(2, 1fr);
-                max-width: 700px;
+                max-width: 900px;
             }
         }
 
