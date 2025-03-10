@@ -174,13 +174,15 @@ app.get('/:username', async (req, res) => {
             z-index: -1;
         }
 
-        /* Twitch-Player & Streamplan - Feste Größe bei allen Zoom-Stufen */
+        /* Twitch-Player & Streamplan */
         .twitch-wrapper, .streamplan-wrapper {
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            width: 320px;
-            height: 180px;
+            width: max(20vw, 300px);
+            height: calc(max(20vw, 300px) * 0.5625);
+            max-width: 25vw;
+            max-height: 25vh;
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
@@ -192,30 +194,32 @@ app.get('/:username', async (req, res) => {
             transition: all 0.3s ease-in-out;
         }
 
-        .twitch-wrapper { 
-            left: 30px; 
-        }
-        
-        .streamplan-wrapper { 
-            right: 30px;
-        }
+        .twitch-wrapper { left: 2vw; }
+        .streamplan-wrapper { right: 2vw; }
 
         .twitch-wrapper iframe, .streamplan-wrapper img {
             width: 100%;
             height: 100%;
         }
 
-        /* Ensure content doesn't overlap with side elements */
-        .album-grid {
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
+        /* Add responsive scaling for high zoom levels */
+        @media (min-width: 1900px) {
+            .twitch-wrapper, .streamplan-wrapper {
+                max-width: 20vw;
+                max-height: 20vh;
+            }
+            
+            .album-grid {
+                max-width: 60vw;
+                margin: 0 auto;
+            }
         }
 
-        /* Content layout for different screen sizes */
-        @media (min-width: 1900px) {
-            .content-container {
-                max-width: 1100px;
+        /* Expand hidden area for side elements */
+        @media (max-width: 1200px) {
+            .twitch-wrapper, .streamplan-wrapper {
+                max-width: 20vw;
+                max-height: 20vh;
             }
         }
 
@@ -228,13 +232,12 @@ app.get('/:username', async (req, res) => {
 
         /* Add additional container to fix content layout */
         .content-container {
-            width: 100%;
-            max-width: 1000px;
+            width: 95%;
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 0 2.5vw;
             position: relative;
             z-index: 5;
-            /* Ensure enough padding to prevent overlap with side elements */
-            padding: 0 20px;
         }
 
         .album-title { 
@@ -252,6 +255,7 @@ app.get('/:username', async (req, res) => {
             justify-content: center; 
             max-width: 900px; 
             margin: 0 auto; 
+            padding: 0 2vw;
         }
 
         /* Karten-Anordnung für Handy (2 Karten pro Reihe) */
@@ -262,10 +266,11 @@ app.get('/:username', async (req, res) => {
             }
         }
 
-        /* Konsistentes 3-Spalten-Layout bei allen Zoom-Stufen beibehalten */
+        /* Higher zooms: reduce columns to prevent overlap */
         @media (min-width: 2000px) {
             .album-grid {
-                max-width: 900px;
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 700px;
             }
         }
 
@@ -280,9 +285,12 @@ app.get('/:username', async (req, res) => {
             background: white; 
             padding: 5px;
             margin-top: 5px;
+
             width: fit-content;
             font-weight: bold;
             text-align: center;
+
+
             display: flex;
             flex-direction: column;
         }
@@ -291,6 +299,8 @@ app.get('/:username', async (req, res) => {
             width: 150px; 
             height: 200px; 
             transition: transform 0.2s ease-in-out; 
+
+
         }
         .card-img:hover { transform: scale(1.1); }
 
@@ -308,26 +318,24 @@ app.get('/:username', async (req, res) => {
 
         #overlay-img { max-width: 80%; max-height: 80%; }
 
-        /* Developer Box - Fixed size */
+        /* Developer Box */
         .dev-box {
             position: fixed;
             bottom: 20px;
-            left: 20px;
+            left: 2vw;
             background: rgba(0, 0, 0, 0.7);
             color: white;
             padding: 10px 15px;
             border-radius: 8px;
-            font-size: 16px; /* Fixed size font */
+            font-size: 1.2em;
             font-weight: bold;
             cursor: pointer;
             border: 2px solid #6016FF;
-            transition: background 0.3s ease-in-out, opacity 0.3s ease;
+            transition: background 0.3s ease-in-out, opacity 0.3s ease, transform 0.3s ease;
             width: fit-content;
             white-space: nowrap;
+            transform: scale(1);
             z-index: 15;
-            /* Prevent scaling with zoom */
-            transform: scale(1) !important;
-            max-width: 180px;
         }
 
         .dev-box:hover {
@@ -400,6 +408,7 @@ app.get('/:username', async (req, res) => {
             margin-right: 5px;
             border-radius: 3px;
         }
+
     </style>
 </head>
 <body>
@@ -562,7 +571,6 @@ app.get('/:username', async (req, res) => {
             }
         }
     }
-
     function enlargeCard(card) {
         document.getElementById('overlay-img').src = card.querySelector('img').src;
         document.getElementById('overlay').style.display = 'flex';
@@ -611,9 +619,12 @@ app.get('/:username', async (req, res) => {
     // Event-Listener hinzufügen
     window.addEventListener('scroll', handleScroll, { passive: true });
 
+
+
     // Lazy Loading beim Laden der Seite aktivieren
     document.addEventListener('DOMContentLoaded', () => {
         setupLazyLoading();
+
     });
     </script>
 </body>
