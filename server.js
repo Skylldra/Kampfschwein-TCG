@@ -179,10 +179,10 @@ app.get('/:username', async (req, res) => {
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            width: max(20vw, 300px);
-            height: calc(max(20vw, 300px) * 0.5625);
+            width: 25vw;
+            height: calc(25vw * 0.5625);
             max-width: 25vw;
-            max-height: 25vh;
+            max-height: 40vh;
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
@@ -194,48 +194,112 @@ app.get('/:username', async (req, res) => {
             transition: all 0.3s ease-in-out;
         }
 
-        .twitch-wrapper { left: 2vw; }
-        .streamplan-wrapper { right: 2vw; }
+        .twitch-wrapper { left: 1vw; }
+        .streamplan-wrapper { right: 1vw; }
 
         .twitch-wrapper iframe, .streamplan-wrapper img {
             width: 100%;
             height: 100%;
         }
 
-        /* Add responsive scaling for high zoom levels */
+        /* Responsive adjustments for high zoom levels */
         @media (min-width: 1900px) {
             .twitch-wrapper, .streamplan-wrapper {
+                max-width: 18vw;
+                max-height: 35vh;
+            }
+            
+            .album-grid {
+                max-width: 55vw;
+                margin: 0 auto;
+                gap: 15px;
+            }
+            
+            .card-img {
+                width: 130px;
+                height: 175px;
+            }
+        }
+
+        /* Wider screens but zoomed in */
+        @media (min-width: 1600px) and (max-width: 1899px) {
+            .twitch-wrapper, .streamplan-wrapper {
                 max-width: 20vw;
-                max-height: 20vh;
+                max-height: 35vh;
             }
             
             .album-grid {
                 max-width: 60vw;
-                margin: 0 auto;
+                gap: 15px;
             }
         }
 
-        /* Expand hidden area for side elements */
-        @media (max-width: 1200px) {
+        /* Medium screens */
+        @media (min-width: 1200px) and (max-width: 1599px) {
+            .twitch-wrapper, .streamplan-wrapper {
+                max-width: 22vw;
+                max-height: 30vh;
+            }
+            
+            .album-grid {
+                max-width: 65vw;
+                gap: 15px;
+            }
+            
+            .card-container p {
+                font-size: 0.9em;
+            }
+        }
+
+        /* Smaller screens */
+        @media (max-width: 1199px) {
             .twitch-wrapper, .streamplan-wrapper {
                 max-width: 20vw;
-                max-height: 20vh;
+                max-height: 25vh;
+            }
+            
+            .album-grid {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 500px;
+                gap: 10px;
+            }
+            
+            .card-img {
+                width: 130px;
+                height: 175px;
             }
         }
 
-        /* Automatic hiding on mobile devices or high zoom */
-        @media (max-width: 1000px) {
+        /* Very high zoom or narrow viewports */
+        @media (max-width: 900px) {
             .twitch-wrapper, .streamplan-wrapper {
                 display: none;
             }
+            
+            .album-grid {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 95vw;
+                gap: 10px;
+                padding: 0;
+            }
+            
+            .content-container {
+                width: 100%;
+                padding: 0 10px;
+            }
+            
+            .card-img {
+                width: 120px;
+                height: 160px;
+            }
         }
 
-        /* Add additional container to fix content layout */
+        /* Improved container to prevent overlapping */
         .content-container {
-            width: 95%;
-            max-width: 1200px;
+            width: 90%;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 0 2.5vw;
+            padding: 0 2vw;
             position: relative;
             z-index: 5;
         }
@@ -266,36 +330,35 @@ app.get('/:username', async (req, res) => {
             }
         }
 
-        /* Higher zooms: reduce columns to prevent overlap */
-        @media (min-width: 2000px) {
-            .album-grid {
-                grid-template-columns: repeat(2, 1fr);
-                max-width: 700px;
-            }
+        /* Fixed card sizing to prevent overflow */
+        .card-container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
         }
 
-        .card-container { 
-            text-align: center; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
-
-        .card-container p { 
-            background: white; 
+        .card-container p {
+            background: white;
             padding: 5px;
             margin-top: 5px;
+            max-width: 95%;
             width: fit-content;
             font-weight: bold;
             text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
             display: flex;
             flex-direction: column;
         }
 
-        .card-img { 
-            width: 150px; 
-            height: 200px; 
-            transition: transform 0.2s ease-in-out; 
+        /* Maintain aspect ratio while allowing some scaling */
+        .card-img {
+            width: 140px;
+            height: 190px;
+            transition: transform 0.2s ease-in-out;
+            object-fit: contain;
         }
         .card-img:hover { transform: scale(1.1); }
 
@@ -403,7 +466,6 @@ app.get('/:username', async (req, res) => {
             margin-right: 5px;
             border-radius: 3px;
         }
-
     </style>
 </head>
 <body>
@@ -567,6 +629,33 @@ app.get('/:username', async (req, res) => {
         }
     }
 
+    // Dynamisch Kartengröße anpassen
+    function adjustCardSizes() {
+        const viewport = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const cards = document.querySelectorAll('.card-img');
+        
+        // Adjust size based on viewport width
+        if (viewport > 1800) {
+            // Large viewport or high zoom
+            cards.forEach(card => {
+                card.style.width = '130px';
+                card.style.height = '175px';
+            });
+        } else if (viewport > 1200) {
+            // Medium viewport
+            cards.forEach(card => {
+                card.style.width = '140px';
+                card.style.height = '190px';
+            });
+        } else {
+            // Small viewport
+            cards.forEach(card => {
+                card.style.width = '120px';
+                card.style.height = '160px';
+            });
+        }
+    }
+
     function enlargeCard(card) {
         document.getElementById('overlay-img').src = card.querySelector('img').src;
         document.getElementById('overlay').style.display = 'flex';
@@ -614,10 +703,13 @@ app.get('/:username', async (req, res) => {
 
     // Event-Listener hinzufügen
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('load', adjustCardSizes);
+    window.addEventListener('resize', adjustCardSizes);
 
     // Lazy Loading beim Laden der Seite aktivieren
     document.addEventListener('DOMContentLoaded', () => {
         setupLazyLoading();
+        adjustCardSizes();
     });
     </script>
 </body>
