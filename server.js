@@ -303,7 +303,8 @@ app.get('/:username', async (req, res) => {
             background: rgba(0, 0, 0, 0.8); 
             display: none; 
             align-items: center; 
-            justify-content: center; 
+            justify-content: center;
+            z-index: 1000; /* Höherer z-index als alle anderen Elemente, um sicherzustellen, dass das Overlay immer im Vordergrund ist */
         }
 
         #overlay-img { max-width: 80%; max-height: 80%; }
@@ -556,6 +557,15 @@ app.get('/:username', async (req, res) => {
                 });
             }
         }
+        
+        // DevBox-Status nach Generationswechsel prüfen und aktualisieren
+        if (window.innerWidth <= 800) {
+            const isNearBottom = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 150;
+            const devBox = document.querySelector('.dev-box');
+            if (isNearBottom) {
+                devBox.classList.add('hidden');
+            }
+        }
     }
 
     function enlargeCard(card) {
@@ -595,20 +605,37 @@ app.get('/:username', async (req, res) => {
                 devBox.classList.remove('hidden');
             }
             
-            // Nach Scrollstopp wieder anzeigen
+            // Prüfen, ob Benutzer am Ende der Seite ist (mit etwas Toleranz)
+            const isNearBottom = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 150;
+            if (isNearBottom) {
+                devBox.classList.add('hidden');
+                // Timeout löschen, damit die Box am Ende der Seite nicht wieder erscheint
+                clearTimeout(scrollTimeout);
+                return;
+            }
+            
+            // Nach Scrollstopp wieder anzeigen, aber nur wenn nicht am Ende der Seite
             clearTimeout(scrollTimeout);
             scrollTimeout = setTimeout(() => {
-                devBox.classList.remove('hidden');
+                if (!((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 150)) {
+                    devBox.classList.remove('hidden');
+                }
             }, 1500);
         }
     }
 
     // Event-Listener hinzufügen
     window.addEventListener('scroll', handleScroll, { passive: true });
-
+    window.addEventListener('resize', handleScroll, { passive: true }); // Auch bei Größenänderung prüfen
+    
     // Lazy Loading beim Laden der Seite aktivieren
     document.addEventListener('DOMContentLoaded', () => {
         setupLazyLoading();
+        
+        // Initial prüfen, ob DevBox versteckt werden sollte (falls Seite bereits gescrollt geladen wird)
+        setTimeout(() => {
+            handleScroll();
+        }, 100);
     });
 </script>
 </body>
