@@ -1,19 +1,29 @@
 //Final Version 10.03.2025
-const express = require('express');
-const { Pool } = require('pg');
-require('dotenv').config();
-const path = require('path');
+/**
+ * Schweinchen-Sammelalbum Server
+ * 
+ * Dieser Code erstellt einen Express.js-Server, der ein digitales Sammelkartenalbum
+ * für "Schweinchen-Karten" verwaltet. Der Server ermöglicht das Anzeigen von Benutzeralben
+ * und das zufällige Austeilen von Karten an Benutzer.
+ */
 
+// Import der benötigten Module
+const express = require('express');     // Express.js Framework für den Server
+const { Pool } = require('pg');         // PostgreSQL-Client für Datenbankzugriff
+require('dotenv').config();             // Lädt Umgebungsvariablen aus .env-Datei
+const path = require('path');           // Modul für Pfadoperationen
+
+// Initialisierung der Express-App
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;  // Serverport aus Umgebungsvariablen oder Standard 3000
 
-// PostgreSQL-Datenbankverbindung
+// PostgreSQL-Datenbankverbindung einrichten
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    connectionString: process.env.DATABASE_URL,  // Verbindungsstring aus Umgebungsvariablen
+    ssl: { rejectUnauthorized: false }           // SSL-Einstellungen für Cloud-Hosting-Umgebungen
 });
 
-// Statische Dateien bereitstellen
+// Statische Dateien für Kartenbilder bereitstellen mit Cache-Einstellungen
 app.use('/cards', express.static(path.join(__dirname, 'cards'), {
     setHeaders: (res, path) => {
         if (path.endsWith('.png') || path.endsWith('.webp')) {
@@ -22,10 +32,14 @@ app.use('/cards', express.static(path.join(__dirname, 'cards'), {
     }
 }));
 
-app.use(express.static(path.join(__dirname))); // Macht background.png verfügbar
+// Statischen Ordner für andere Dateien wie background.png bereitstellen
+app.use(express.static(path.join(__dirname)));
 
-// Karten nach Generationen geordnet mit Seltenheiten
-// Seltenheiten: 1 = Common, 2 = Uncommon, 3 = Rare, 4 = Epic, 5 = Legendary
+/**
+ * Kartendefinitionen nach Generationen geordnet mit Seltenheiten
+ * Jede Generation enthält 12 Karten mit verschiedenen Seltenheitsstufen
+ * Seltenheiten: 1 = Common, 2 = Uncommon, 3 = Rare, 4 = Epic, 5 = Legendary
+ */
 const generations = [
     [ // Generation 1
         { name: "Vampirschwein", rarity: 1 },
@@ -70,9 +84,12 @@ const generations = [
         { name: "Schweinhorn", rarity: 5 }
     ]
 ];
-const totalGenerations = generations.length;
+const totalGenerations = generations.length;  // Gesamtanzahl der Generationen für Navigationslogik
 
-// Seltenheits-zu-Gewichtung-Mapping
+/**
+ * Gewichtungen für die Seltenheitsstufen beim zufälligen Verteilen von Karten
+ * Je höher der Wert, desto wahrscheinlicher ist es, dass diese Seltenheit gezogen wird
+ */
 const rarityWeights = {
     1: 40,  // Common: sehr häufig
     2: 30,  // Uncommon: häufig
@@ -81,7 +98,10 @@ const rarityWeights = {
     5: 5    // Legendary: extrem selten
 };
 
-// Farben für die Seltenheiten
+/**
+ * Farbdefinitionen für die verschiedenen Seltenheitsstufen
+ * Diese Farben werden für die Kartenrahmen in der Benutzeroberfläche verwendet
+ */
 const rarityColors = {
     1: "#A0A0A0", // Common: Grau
     2: "#209020", // Uncommon: Grün
@@ -90,18 +110,27 @@ const rarityColors = {
     5: "#FFA500"  // Legendary: Orange/Gold
 };
 
-// Datum in deutsches Format umwandeln
+/**
+ * Hilfsfunktion: Wandelt ein Datum in deutsches Format (TT.MM.JJJJ) um
+ * @param {string} dateString - Das zu formatierende Datum im ISO-Format
+ * @return {string} Formatiertes Datum im deutschen Format
+ */
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-// Benutzeralbum anzeigen
+/**
+ * Route: Benutzeralbum anzeigen
+ * Zeigt das Sammelalbum eines bestimmten Benutzers mit allen gesammelten und fehlenden Karten an
+ */
 app.get('/:username', async (req, res) => {
     const username = req.params.username;
     if (!username) return res.status(400).send("Fehlender Benutzername");
 
     try {
+        // Abfrage aller Karten des Benutzers aus der Datenbank
+        // Gruppiert nach Kartenname mit Anzahl und Datum des ersten Erhalts
         const result = await pool.query(
             `SELECT card_name, COUNT(*) AS count, MIN(obtained_date) AS first_obtained 
             FROM user_cards 
@@ -109,9 +138,10 @@ app.get('/:username', async (req, res) => {
             GROUP BY card_name`
         , [username]);
 
+        // Erstellt eine Map mit den Karten des Benutzers für schnelleren Zugriff
         const ownedCards = new Map(result.rows.map(row => [row.card_name, { count: row.count, date: formatDate(row.first_obtained) }]));
 
-        // Erstelle ein Mapping von Kartennamen zu Seltenheiten
+        // Erstellt eine Map für schnellen Zugriff auf die Seltenheit einer Karte
         const cardRarities = new Map();
         generations.forEach(gen => {
             gen.forEach(card => {
@@ -119,38 +149,42 @@ app.get('/:username', async (req, res) => {
             });
         });
 
-        // Alle Generationen durchlaufen und HTML für jede Generation erstellen
+        // Erstellt HTML für jede Generation von Karten
         const generationHtml = generations.map((genCards, genIndex) => {
             const genNumber = genIndex + 1;
-            const startCardNumber = genIndex * 12 + 1; // Berechne die Startnummer für diese Generation
+            const startCardNumber = genIndex * 12 + 1; // Berechnet die Startnummer für diese Generation
 
-            // Erstelle HTML für jede Karte in dieser Generation
+            // Erstellt HTML für jede Karte in dieser Generation
             const cardsHtml = genCards.map((card, cardIndex) => {
                 const cardName = card.name;
                 const rarity = card.rarity;
                 const rarityColor = rarityColors[rarity];
 
+                // Kartendetails berechnen
                 const cardNumber = String(startCardNumber + cardIndex).padStart(2, '0');
                 const isOwned = ownedCards.has(cardName);
                 const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
 
+                // Anzeigetext vorbereiten (unterschiedlich für gesammelte und nicht gesammelte Karten)
                 const countText = isOwned ? `${ownedCards.get(cardName).count}x ` : "";
                 const dateText = isOwned ? `<br>${ownedCards.get(cardName).date}` : "";
                 const displayText = isOwned ? `${countText}${cardName} ${cardIndex + 1}/${genCards.length}${dateText}` : `??? ${cardIndex + 1}/${genCards.length}`;
 
-                // Füge einen farbigen Rand basierend auf der Seltenheit hinzu
+                // Farbigen Rahmen basierend auf der Seltenheit hinzufügen
                 const borderStyle = `border: 2px solid ${rarityColor};`;
 
+                // HTML für eine einzelne Karte erstellen
                 return `<div class='card-container' onclick='enlargeCard(this)'>
                             <img data-src='${imgSrc}' class='card-img lazyload' loading="lazy">
                             <p style="${borderStyle}">${displayText}</p>
                         </div>`;
             }).join('');
 
-            // Gib HTML für diese Generation mit verstecktem Display für alle außer der ersten zurück
+            // HTML für diese Generation mit verstecktem Display für alle außer der ersten zurückgeben
             return `<div id="gen-${genNumber}" class="album-grid" style="display: ${genIndex === 0 ? 'grid' : 'none'}">${cardsHtml}</div>`;
         }).join('');
 
+        // Die gesamte HTML-Seite für das Benutzeralbum erstellen und senden
         res.send(`<!DOCTYPE html>
 <html lang='de'>
 <head>
@@ -177,27 +211,26 @@ app.get('/:username', async (req, res) => {
 
         /* Twitch-Player & Streamplan */
         .twitch-wrapper, .streamplan-wrapper {
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    width: max(25vw, 450px);  /* Increased from 20vw, 400px */
-    height: calc(max(25vw, 450px) * 0.5625);
-    max-width: 42vw;  /* Increased from 35vw */
-    max-height: 45vh;  /* Increased from 35vh */
-    border-radius: 10px;
-    border: 3px solid #6016FF;
-    overflow: hidden;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: black;
-    transition: all 0.3s ease-in-out;
-}
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: max(20vw, 400px);
+            height: calc(max(20vw, 400px) * 0.5625);
+            max-width: 35vw;
+            max-height: 35vh;
+            border-radius: 10px;
+            border: 3px solid #6016FF;
+            overflow: hidden;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: black;
+            transition: all 0.3s ease-in-out;
+        }
 
-        
-.twitch-wrapper { left: 15px; }  /* Reduced from 20px to get closer to edge */
-.streamplan-wrapper { right: 15px; }  /* Reduced from 20px to get closer to edge */
+        .twitch-wrapper { left: 20px; }
+        .streamplan-wrapper { right: 20px; }
 
         .twitch-wrapper iframe, .streamplan-wrapper img {
             width: 100%;
@@ -586,6 +619,10 @@ app.get('/:username', async (req, res) => {
     }
 });
 
+/**
+ * Route: Zufällige Karte an Benutzer verteilen
+ * Wählt basierend auf Seltenheitsgewichtungen eine zufällige Karte aus und fügt sie der Sammlung des Benutzers hinzu
+ */
 app.get('/random/:username', async (req, res) => {
     const username = req.params.username;
     if (!username) return res.status(400).send("Fehlender Benutzername");
@@ -599,6 +636,7 @@ app.get('/random/:username', async (req, res) => {
         weight: rarityWeights[card.rarity] || 15 
     }));
 
+    // Zufälliges Ziehen einer Karte basierend auf den Seltenheitsgewichtungen
     const totalWeight = probabilities.reduce((sum, item) => sum + item.weight, 0);
     let threshold = Math.random() * totalWeight;
     let selectedCard = probabilities.find(item => (threshold -= item.weight) <= 0)?.card || probabilities[0].card;
@@ -606,6 +644,7 @@ app.get('/random/:username', async (req, res) => {
     const date = new Date().toISOString().split('T')[0];
 
     try {
+        // Speichern der gezogenen Karte in der Datenbank
         await pool.query("INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)", [username, selectedCard, date]);
         res.send(`${selectedCard}`);
     } catch (err) {
@@ -614,6 +653,7 @@ app.get('/random/:username', async (req, res) => {
     }
 });
 
+// Server starten und auf eingestelltem Port lauschen
 app.listen(port, () => {
     console.log(`Server läuft auf Port ${port}`);
 });
