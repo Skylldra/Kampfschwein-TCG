@@ -122,13 +122,13 @@ app.get('/:username', async (req, res) => {
         const generationHtml = generations.map((genCards, genIndex) => {
             const genNumber = genIndex + 1;
             const startCardNumber = genIndex * 12 + 1; // Berechne die Startnummer für diese Generation
-            
+
             // Erstelle HTML für jede Karte in dieser Generation
             const cardsHtml = genCards.map((card, cardIndex) => {
                 const cardName = card.name;
                 const rarity = card.rarity;
                 const rarityColor = rarityColors[rarity];
-                
+
                 const cardNumber = String(startCardNumber + cardIndex).padStart(2, '0');
                 const isOwned = ownedCards.has(cardName);
                 const imgSrc = isOwned ? `/cards/${cardNumber}.png` : `/cards/${cardNumber}_blurred.png`;
@@ -179,10 +179,10 @@ app.get('/:username', async (req, res) => {
             position: fixed;
             top: 50%;
             transform: translateY(-50%);
-            width: max(20vw, 300px);
-            height: calc(max(20vw, 300px) * 0.5625);
-            max-width: 25vw;
-            max-height: 25vh;
+            width: max(20vw, 400px);
+            height: calc(max(20vw, 400px) * 0.5625);
+            max-width: 35vw;
+            max-height: 35vh;
             border-radius: 10px;
             border: 3px solid #6016FF;
             overflow: hidden;
@@ -194,50 +194,19 @@ app.get('/:username', async (req, res) => {
             transition: all 0.3s ease-in-out;
         }
 
-        .twitch-wrapper { left: 2vw; }
-        .streamplan-wrapper { right: 2vw; }
+        .twitch-wrapper { left: 20px; }
+        .streamplan-wrapper { right: 20px; }
 
         .twitch-wrapper iframe, .streamplan-wrapper img {
             width: 100%;
             height: 100%;
         }
 
-        /* Add responsive scaling for high zoom levels */
-        @media (min-width: 1900px) {
-            .twitch-wrapper, .streamplan-wrapper {
-                max-width: 20vw;
-                max-height: 20vh;
-            }
-            
-            .album-grid {
-                max-width: 60vw;
-                margin: 0 auto;
-            }
-        }
-
-        /* Expand hidden area for side elements */
-        @media (max-width: 1200px) {
-            .twitch-wrapper, .streamplan-wrapper {
-                max-width: 20vw;
-                max-height: 20vh;
-            }
-        }
-
-        /* Automatic hiding on mobile devices or high zoom */
-        @media (max-width: 1000px) {
+        /* Automatische Ausblendung auf mobilen Geräten */
+        @media (max-width: 800px) {
             .twitch-wrapper, .streamplan-wrapper {
                 display: none;
             }
-        }
-
-        /* Add additional container to fix content layout */
-        .content-container {
-            width: 95%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2.5vw;
-            position: relative;
-            z-index: 5;
         }
 
         .album-title { 
@@ -254,8 +223,7 @@ app.get('/:username', async (req, res) => {
             gap: 20px; 
             justify-content: center; 
             max-width: 900px; 
-            margin: 0 auto; 
-            padding: 0 2vw;
+            margin: auto; 
         }
 
         /* Karten-Anordnung für Handy (2 Karten pro Reihe) */
@@ -263,14 +231,6 @@ app.get('/:username', async (req, res) => {
             .album-grid {
                 grid-template-columns: repeat(2, 1fr);
                 max-width: 600px;
-            }
-        }
-
-        /* Higher zooms: reduce columns to prevent overlap */
-        @media (min-width: 2000px) {
-            .album-grid {
-                grid-template-columns: repeat(2, 1fr);
-                max-width: 700px;
             }
         }
 
@@ -285,12 +245,9 @@ app.get('/:username', async (req, res) => {
             background: white; 
             padding: 5px;
             margin-top: 5px;
-
             width: fit-content;
             font-weight: bold;
             text-align: center;
-
-
             display: flex;
             flex-direction: column;
         }
@@ -299,8 +256,6 @@ app.get('/:username', async (req, res) => {
             width: 150px; 
             height: 200px; 
             transition: transform 0.2s ease-in-out; 
-
-
         }
         .card-img:hover { transform: scale(1.1); }
 
@@ -318,11 +273,11 @@ app.get('/:username', async (req, res) => {
 
         #overlay-img { max-width: 80%; max-height: 80%; }
 
-        /* Developer Box */
+        /* Developer Box bleibt immer gleich groß */
         .dev-box {
             position: fixed;
             bottom: 20px;
-            left: 2vw;
+            left: 20px;
             background: rgba(0, 0, 0, 0.7);
             color: white;
             padding: 10px 15px;
@@ -335,7 +290,6 @@ app.get('/:username', async (req, res) => {
             width: fit-content;
             white-space: nowrap;
             transform: scale(1);
-            z-index: 15;
         }
 
         .dev-box:hover {
@@ -384,14 +338,14 @@ app.get('/:username', async (req, res) => {
 
         /* Seltenheits-Legende */
         .rarity-legend {
-            margin: 20px auto;
-            margin-bottom: 40px;
+            margin: 20px auto;  /* Von margin-top zu margin geändert */
+            margin-bottom: 40px; /* Mehr Abstand nach unten hinzugefügt */
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
             gap: 10px;
-            position: relative;
-            z-index: 5;
+            position: relative; /* Position hinzugefügt */
+            z-index: 5; /* Z-Index hinzugefügt, damit sie über dem Hintergrund liegt */
         }
 
         .rarity-item {
@@ -428,43 +382,40 @@ app.get('/:username', async (req, res) => {
         <img src="/streamplan.png" alt="Streamplan">
     </div>
 
-    <!-- Content Container -->
-    <div class="content-container">
-        <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
-        
-        <!-- Seltenheits-Legende -->
-        <div class="rarity-legend">
-            <div class="rarity-item">
-                <div class="rarity-color" style="background-color: #A0A0A0;"></div>
-                <span>Common</span>
-            </div>
-            <div class="rarity-item">
-                <div class="rarity-color" style="background-color: #209020;"></div>
-                <span>Uncommon</span>
-            </div>
-            <div class="rarity-item">
-                <div class="rarity-color" style="background-color: #2050FF;"></div>
-                <span>Rare</span>
-            </div>
-            <div class="rarity-item">
-                <div class="rarity-color" style="background-color: #A020F0;"></div>
-                <span>Epic</span>
-            </div>
-            <div class="rarity-item">
-                <div class="rarity-color" style="background-color: #FFA500;"></div>
-                <span>Legendary</span>
-            </div>
+    <h1 class='album-title'>Schweinchen-Sammelalbum von ${username}</h1>
+    
+    <!-- Seltenheits-Legende -->
+    <div class="rarity-legend">
+        <div class="rarity-item">
+            <div class="rarity-color" style="background-color: #A0A0A0;"></div>
+            <span>Common</span>
         </div>
-        
-        <!-- Generierte Karten für jede Generation werden hier eingefügt -->
-        ${generationHtml}
+        <div class="rarity-item">
+            <div class="rarity-color" style="background-color: #209020;"></div>
+            <span>Uncommon</span>
+        </div>
+        <div class="rarity-item">
+            <div class="rarity-color" style="background-color: #2050FF;"></div>
+            <span>Rare</span>
+        </div>
+        <div class="rarity-item">
+            <div class="rarity-color" style="background-color: #A020F0;"></div>
+            <span>Epic</span>
+        </div>
+        <div class="rarity-item">
+            <div class="rarity-color" style="background-color: #FFA500;"></div>
+            <span>Legendary</span>
+        </div>
+    </div>
+    
+    <!-- Generierte Karten für jede Generation werden hier eingefügt -->
+    ${generationHtml}
 
-        <!-- Generationen Navigation -->
-        <div class="generation-controls">
-            <button class="gen-button" onclick="prevGen()">← Zurück</button>
-            <span id="gen-text" class="gen-text">Gen. 1</span>
-            <button class="gen-button" onclick="nextGen()">Nächste Seite →</button>
-        </div>
+    <!-- Generationen Navigation -->
+    <div class="generation-controls">
+        <button class="gen-button" onclick="prevGen()">← Zurück</button>
+        <span id="gen-text" class="gen-text">Gen. 1</span>
+        <button class="gen-button" onclick="nextGen()">Nächste Seite →</button>
     </div>
 
     <div id='overlay' onclick='closeEnlarged()'>
@@ -571,6 +522,7 @@ app.get('/:username', async (req, res) => {
             }
         }
     }
+
     function enlargeCard(card) {
         document.getElementById('overlay-img').src = card.querySelector('img').src;
         document.getElementById('overlay').style.display = 'flex';
@@ -619,14 +571,11 @@ app.get('/:username', async (req, res) => {
     // Event-Listener hinzufügen
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-
-
     // Lazy Loading beim Laden der Seite aktivieren
     document.addEventListener('DOMContentLoaded', () => {
         setupLazyLoading();
-
     });
-    </script>
+</script>
 </body>
 </html>`);
     } catch (err) {
@@ -641,7 +590,7 @@ app.get('/random/:username', async (req, res) => {
 
     // Erstelle eine flache Liste aller Karten mit ihren Seltenheiten
     const allCards = generations.flat();
-    
+
     // Berechne Gewichtungen basierend auf Seltenheit
     const probabilities = allCards.map(card => ({ 
         card: card.name, 
