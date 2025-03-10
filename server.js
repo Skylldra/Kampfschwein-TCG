@@ -89,18 +89,20 @@ const totalGenerations = generations.length;  // Gesamtanzahl der Generationen f
 /**
  * Gewichtungen für die Seltenheitsstufen beim zufälligen Verteilen von Karten
  * Je höher der Wert, desto wahrscheinlicher ist es, dass diese Seltenheit gezogen wird
+ * Diese Werte bestimmen direkt die Wahrscheinlichkeit, mit der Karten einer bestimmten Seltenheit erscheinen
  */
 const rarityWeights = {
-    1: 40,  // Common: sehr häufig
-    2: 30,  // Uncommon: häufig
-    3: 15,  // Rare: selten
-    4: 10,  // Epic: sehr selten
-    5: 5    // Legendary: extrem selten
+    1: 40,  // Common: sehr häufig (40% Chance)
+    2: 30,  // Uncommon: häufig (30% Chance)
+    3: 15,  // Rare: selten (15% Chance)
+    4: 10,  // Epic: sehr selten (10% Chance)
+    5: 5    // Legendary: extrem selten (5% Chance)
 };
 
 /**
  * Farbdefinitionen für die verschiedenen Seltenheitsstufen
  * Diese Farben werden für die Kartenrahmen in der Benutzeroberfläche verwendet
+ * und folgen gängigen Seltenheits-Farbkonventionen aus Sammelkartenspielen
  */
 const rarityColors = {
     1: "#A0A0A0", // Common: Grau
@@ -123,6 +125,7 @@ function formatDate(dateString) {
 /**
  * Route: Benutzeralbum anzeigen
  * Zeigt das Sammelalbum eines bestimmten Benutzers mit allen gesammelten und fehlenden Karten an
+ * Erzeugt die gesamte HTML-Seite für die Darstellung des Albums im Browser
  */
 app.get('/:username', async (req, res) => {
     const username = req.params.username;
@@ -374,14 +377,14 @@ app.get('/:username', async (req, res) => {
 
         /* Seltenheits-Legende */
         .rarity-legend {
-            margin: 20px auto;  /* Von margin-top zu margin geändert */
-            margin-bottom: 40px; /* Mehr Abstand nach unten hinzugefügt */
+            margin: 20px auto;
+            margin-bottom: 40px;
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
             gap: 10px;
-            position: relative; /* Position hinzugefügt */
-            z-index: 5; /* Z-Index hinzugefügt, damit sie über dem Hintergrund liegt */
+            position: relative;
+            z-index: 5; /* Wichtig: Niedriger als der z-index des Overlays (1000) */
         }
 
         .rarity-item {
@@ -467,7 +470,11 @@ app.get('/:username', async (req, res) => {
     let currentGen = 1;
     const totalGenerations = ${totalGenerations};
 
-    // Verbesserte Lazy Loading-Funktion
+    /**
+     * Lazy-Loading für Kartenbilder
+     * Lädt Bilder erst, wenn sie in den sichtbaren Bereich des Browsers gelangen
+     * Spart Bandbreite und beschleunigt das initiale Laden der Seite
+     */
     function setupLazyLoading() {
         let lazyImages = document.querySelectorAll("img.lazyload");
         
@@ -479,7 +486,7 @@ app.get('/:username', async (req, res) => {
             }
         });
         
-        // Observer für andere Bilder
+        // IntersectionObserver für Bilder, die durch Scrollen sichtbar werden
         let observer = new IntersectionObserver(entries => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -490,13 +497,17 @@ app.get('/:username', async (req, res) => {
                 }
             });
         }, {
-            rootMargin: "100px" // Bilder laden, wenn sie 100px vom Viewport entfernt sind
+            rootMargin: "100px" // Bilder werden geladen, wenn sie 100px vom Viewport entfernt sind
         });
 
         lazyImages.forEach(img => observer.observe(img));
     }
 
-    // Prüft, ob ein Element im Viewport ist
+    /**
+     * Prüft, ob ein Element im sichtbaren Bereich (Viewport) des Browsers ist
+     * @param {HTMLElement} element - Das zu prüfende DOM-Element
+     * @return {boolean} true, wenn das Element sichtbar ist
+     */
     function isInViewport(element) {
         const rect = element.getBoundingClientRect();
         return (
@@ -507,6 +518,10 @@ app.get('/:username', async (req, res) => {
         );
     }
 
+    /**
+     * Navigation zur vorherigen Generation
+     * Wird beim Klick auf den "Zurück"-Button ausgeführt
+     */
     function prevGen() {
         if (currentGen > 1) {
             currentGen--;
@@ -514,6 +529,10 @@ app.get('/:username', async (req, res) => {
         }
     }
 
+    /**
+     * Navigation zur nächsten Generation
+     * Wird beim Klick auf den "Nächste Seite"-Button ausgeführt
+     */
     function nextGen() {
         if (currentGen < totalGenerations) {
             currentGen++;
@@ -521,6 +540,11 @@ app.get('/:username', async (req, res) => {
         }
     }
 
+    /**
+     * Aktualisiert die Anzeige nach einem Generationswechsel
+     * Versteckt alle Generationen außer der aktuell ausgewählten
+     * Lädt Bilder für die aktuelle Generation und lädt Bilder für die nächste Generation vor
+     */
     function updateGenDisplay() {
         // Aktualisiere den Generationstext
         document.getElementById("gen-text").innerText = "Gen. " + currentGen;
@@ -545,7 +569,7 @@ app.get('/:username', async (req, res) => {
             }
         }
         
-        // Bilder für die nächste Generation vorladen
+        // Bilder für die nächste Generation vorladen (Performance-Optimierung)
         const nextGen = currentGen + 1;
         if (nextGen <= totalGenerations) {
             const nextGenElement = document.getElementById("gen-" + nextGen);
@@ -559,6 +583,7 @@ app.get('/:username', async (req, res) => {
         }
         
         // DevBox-Status nach Generationswechsel prüfen und aktualisieren
+        // Wichtig für mobile Ansicht, damit die DevBox nicht den Zurück-Button verdeckt
         if (window.innerWidth <= 800) {
             const isNearBottom = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 150;
             const devBox = document.querySelector('.dev-box');
@@ -568,11 +593,20 @@ app.get('/:username', async (req, res) => {
         }
     }
 
+    /**
+     * Vergrößert eine Karte bei Klick
+     * Zeigt die Karte in einem Overlay über der Seite an
+     * @param {HTMLElement} card - Das Karten-Container-Element
+     */
     function enlargeCard(card) {
         document.getElementById('overlay-img').src = card.querySelector('img').src;
         document.getElementById('overlay').style.display = 'flex';
     }
 
+    /**
+     * Schließt die vergrößerte Kartenansicht
+     * Wird beim Klick auf das Overlay ausgeführt
+     */
     function closeEnlarged() {
         document.getElementById('overlay').style.display = 'none';
     }
@@ -582,6 +616,11 @@ app.get('/:username', async (req, res) => {
     let scrollThreshold = 50; // Mindestens 50px Scroll, um Aktion auszulösen
     let scrollTimeout;
 
+    /**
+     * Behandelt das Scroll-Ereignis
+     * Blendet die DevBox auf mobilen Geräten ein oder aus, abhängig von der Scrollrichtung
+     * und der Position auf der Seite
+     */
     function handleScroll() {
         // Nur auf Mobilgeräten anwenden
         if (window.innerWidth <= 800) {
@@ -649,6 +688,7 @@ app.get('/:username', async (req, res) => {
 /**
  * Route: Zufällige Karte an Benutzer verteilen
  * Wählt basierend auf Seltenheitsgewichtungen eine zufällige Karte aus und fügt sie der Sammlung des Benutzers hinzu
+ * Verwendet ein gewichtetes Zufallssystem, bei dem seltenere Karten eine geringere Wahrscheinlichkeit haben
  */
 app.get('/random/:username', async (req, res) => {
     const username = req.params.username;
@@ -658,12 +698,14 @@ app.get('/random/:username', async (req, res) => {
     const allCards = generations.flat();
 
     // Berechne Gewichtungen basierend auf Seltenheit
+    // Jede Karte bekommt einen Gewichtungswert entsprechend ihrer Seltenheit
     const probabilities = allCards.map(card => ({ 
         card: card.name, 
         weight: rarityWeights[card.rarity] || 15 
     }));
 
-    // Zufälliges Ziehen einer Karte basierend auf den Seltenheitsgewichtungen
+    // Gewichtete Zufallsauswahl einer Karte
+    // Summiert die Gewichte und wählt eine zufällige Position in dieser Summe
     const totalWeight = probabilities.reduce((sum, item) => sum + item.weight, 0);
     let threshold = Math.random() * totalWeight;
     let selectedCard = probabilities.find(item => (threshold -= item.weight) <= 0)?.card || probabilities[0].card;
@@ -671,7 +713,7 @@ app.get('/random/:username', async (req, res) => {
     const date = new Date().toISOString().split('T')[0];
 
     try {
-        // Speichern der gezogenen Karte in der Datenbank
+        // Speichern der gezogenen Karte in der Datenbank mit aktuellem Datum
         await pool.query("INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)", [username, selectedCard, date]);
         res.send(`${selectedCard}`);
     } catch (err) {
