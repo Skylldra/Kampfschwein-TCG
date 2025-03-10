@@ -286,7 +286,7 @@ app.get('/:username', async (req, res) => {
             font-weight: bold;
             cursor: pointer;
             border: 2px solid #6016FF;
-            transition: background 0.3s ease-in-out;
+            transition: background 0.3s ease-in-out, opacity 0.3s ease, transform 0.3s ease;
             width: fit-content;
             white-space: nowrap;
             transform: scale(1);
@@ -294,6 +294,14 @@ app.get('/:username', async (req, res) => {
 
         .dev-box:hover {
             background: #6016FF;
+        }
+
+        /* Für mobile Geräte: DevBox verstecken beim Scrollen */
+        @media (max-width: 800px) {
+            .dev-box.hidden {
+                opacity: 0;
+                pointer-events: none;
+            }
         }
 
         /* Buttons für Generationen-Wechsel */
@@ -423,21 +431,44 @@ app.get('/:username', async (req, res) => {
     let currentGen = 1;
     const totalGenerations = ${totalGenerations};
 
-    // Lazy Loading für Bilder
+    // Verbesserte Lazy Loading-Funktion
     function setupLazyLoading() {
         let lazyImages = document.querySelectorAll("img.lazyload");
+        
+        // Sofort sichtbare Bilder laden
+        lazyImages.forEach(img => {
+            if (isInViewport(img)) {
+                img.src = img.dataset.src;
+                img.classList.remove("lazyload");
+            }
+        });
+        
+        // Observer für andere Bilder
         let observer = new IntersectionObserver(entries => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     let img = entry.target;
                     img.src = img.dataset.src;
                     img.classList.remove("lazyload");
-                    observer.unobserve(img); // Bild entladen, um Leistung zu verbessern
+                    observer.unobserve(img);
                 }
             });
+        }, {
+            rootMargin: "100px" // Bilder laden, wenn sie 100px vom Viewport entfernt sind
         });
 
         lazyImages.forEach(img => observer.observe(img));
+    }
+
+    // Prüft, ob ein Element im Viewport ist
+    function isInViewport(element) {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
     }
 
     function prevGen() {
@@ -477,6 +508,19 @@ app.get('/:username', async (req, res) => {
                 }
             }
         }
+        
+        // Bilder für die nächste Generation vorladen
+        const nextGen = currentGen + 1;
+        if (nextGen <= totalGenerations) {
+            const nextGenElement = document.getElementById("gen-" + nextGen);
+            if (nextGenElement) {
+                const nextGenImages = nextGenElement.querySelectorAll('.card-img.lazyload');
+                nextGenImages.forEach(img => {
+                    const preloadImage = new Image();
+                    preloadImage.src = img.getAttribute('data-src');
+                });
+            }
+        }
     }
 
     function enlargeCard(card) {
@@ -487,6 +531,45 @@ app.get('/:username', async (req, res) => {
     function closeEnlarged() {
         document.getElementById('overlay').style.display = 'none';
     }
+
+    // DevBox bei Scrollen auf Handy ein-/ausblenden
+    let lastScrollPosition = 0;
+    let scrollThreshold = 50; // Mindestens 50px Scroll, um Aktion auszulösen
+    let scrollTimeout;
+
+    function handleScroll() {
+        // Nur auf Mobilgeräten anwenden
+        if (window.innerWidth <= 800) {
+            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+            const devBox = document.querySelector('.dev-box');
+            
+            // Ein-/Ausblenden basierend auf Scrollrichtung und -distanz
+            if (Math.abs(currentScroll - lastScrollPosition) > scrollThreshold) {
+                if (currentScroll > lastScrollPosition) {
+                    // Nach unten scrollen
+                    devBox.classList.add('hidden');
+                } else {
+                    // Nach oben scrollen
+                    devBox.classList.remove('hidden');
+                }
+                lastScrollPosition = currentScroll;
+            }
+            
+            // Immer anzeigen, wenn oben auf der Seite
+            if (currentScroll <= 10) {
+                devBox.classList.remove('hidden');
+            }
+            
+            // Nach Scrollstopp wieder anzeigen
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                devBox.classList.remove('hidden');
+            }, 1500);
+        }
+    }
+
+    // Event-Listener hinzufügen
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     // Lazy Loading beim Laden der Seite aktivieren
     document.addEventListener('DOMContentLoaded', () => {
