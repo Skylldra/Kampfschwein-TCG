@@ -406,8 +406,15 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <!-- Twitch Livestream links - automatischer Wechsel zu Clips bei Offline-Status -->
-    <div class="twitch-wrapper" id="twitchPlayer"></div>
+    <!-- Twitch Livestream links - mit automatischen Clips bei Offline-Status -->
+    <div class="twitch-wrapper" id="twitchPlayer">
+        <iframe 
+            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com&autoplay=true&muted=false&allowfullscreen=true" 
+            frameborder="0" 
+            allowfullscreen="true" 
+            scrolling="no">
+        </iframe>
+    </div>
 
     <!-- Streamplan rechts -->
     <div class="streamplan-wrapper" id="streamplanImage">
@@ -660,52 +667,49 @@ app.get('/:username', async (req, res) => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleScroll, { passive: true }); // Auch bei Größenänderung prüfen
     
-    // Twitch Embed API laden
-    const script = document.createElement('script');
-    script.src = "https://embed.twitch.tv/embed/v1.js";
-    document.body.appendChild(script);
-    
-    // Twitch Player initialisieren, wenn die API geladen ist
-    script.onload = function() {
-        const options = {
-            width: '100%',
-            height: '100%',
-            channel: 'kampfschwein90',
-            parent: ["kampfschwein-tcg.onrender.com"],
-            autoplay: true,
-        };
-        
-        const twitchPlayer = new Twitch.Embed("twitchPlayer", options);
-        const player = twitchPlayer.getPlayer();
-        
-        // Event-Listener für Offline-Status
-        twitchPlayer.addEventListener(Twitch.Embed.VIDEO_READY, () => {
-            player.addEventListener(Twitch.Player.OFFLINE, () => {
-                // Wenn Kanal offline ist, Clips-Player anzeigen
-                document.getElementById("twitchPlayer").innerHTML = '';
-                new Twitch.Embed("twitchPlayer", {
-                    width: '100%',
-                    height: '100%',
-                    channel: 'kampfschwein90',
-                    parent: ["kampfschwein-tcg.onrender.com"],
-                    autoplay: true,
-                    layout: 'video',
-                    collection: '', // Leer lassen, um die neuesten Clips zu zeigen
-                    clip: '' // Leer lassen, um die beliebtesten Clips zu zeigen
-                });
-            });
-        });
-    };
-    
     // Lazy Loading beim Laden der Seite aktivieren
     document.addEventListener('DOMContentLoaded', () => {
         setupLazyLoading();
         
-        // Initial prüfen, ob DevBox versteckt werden sollte (falls Seite bereits gescrollt geladen wird)
+        // Initial prüfen, ob DevBox versteckt werden sollte
         setTimeout(() => {
             handleScroll();
         }, 100);
+        
+        // Twitch Offline-Erkennung und Clips-Anzeige hinzufügen
+        setupTwitchClips();
     });
+    
+    // Funktion zum Erkennen des Offline-Status und Wechsel zu Clips
+    function setupTwitchClips() {
+        // Warte kurz, bis der Twitch-Player geladen ist
+        setTimeout(() => {
+            // Prüfe, ob der Offline-Screen sichtbar ist (der graue Bereich mit dem Offline-Text)
+            const offlineScreen = document.querySelector('.twitch-wrapper iframe').contentDocument?.querySelector('.offline-slide');
+            
+            if (offlineScreen) {
+                // Kanal ist offline, ersetzen durch Clips-Player
+                const twitchFrame = document.querySelector('.twitch-wrapper iframe');
+                const parentNode = twitchFrame.parentNode;
+                
+                // Alten Player entfernen
+                twitchFrame.remove();
+                
+                // Neuen Clips-Player laden
+                const clipsFrame = document.createElement('iframe');
+                clipsFrame.src = `https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com&autoplay=true&muted=false&allowfullscreen=true&collection=RANDOMID`;
+                clipsFrame.allowFullscreen = true;
+                clipsFrame.scrolling = "no";
+                clipsFrame.frameBorder = "0";
+                
+                // Neuen Player einfügen
+                parentNode.appendChild(clipsFrame);
+            }
+            
+            // Weiterhin regelmäßig prüfen (alle 60 Sekunden)
+            setTimeout(setupTwitchClips, 60000);
+        }, 5000);
+    }
 </script>
 </body>
 </html>`);
