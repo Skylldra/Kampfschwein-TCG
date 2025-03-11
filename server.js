@@ -423,7 +423,7 @@ app.get('/:username', async (req, res) => {
     <!-- Twitch Livestream links mit automatischen Clips wenn offline -->
     <div class="twitch-wrapper" id="twitchPlayer">
         <iframe 
-            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com&autoplay=true&muted=false&collection=jqQPzYrj0hb0jA" 
+            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com&autoplay=true&muted=false" 
             frameborder="0" 
             allowfullscreen="true" 
             scrolling="no">
