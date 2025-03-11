@@ -1,4 +1,4 @@
-//Versuch Clipplay 5
+//Final Version 11.03.2025 Generation4
 /**
  * Schweinchen-Sammelalbum Server
  * 
@@ -420,10 +420,10 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <!-- Twitch Livestream links mit automatischen Clips wenn offline -->
+    <!-- Twitch Livestream links -->
     <div class="twitch-wrapper" id="twitchPlayer">
         <iframe 
-            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com&autoplay=true&muted=false" 
+            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
             frameborder="0" 
             allowfullscreen="true" 
             scrolling="no">
