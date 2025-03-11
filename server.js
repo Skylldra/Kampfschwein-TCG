@@ -1,4 +1,4 @@
-//Versuch für Twitch Clips, wenn Kanal offline
+//Final Version 11.03.2025 Generation4
 /**
  * Schweinchen-Sammelalbum Server
  * 
@@ -82,6 +82,20 @@ const generations = [
         { name: "Oinktron 3000", rarity: 3 },
         { name: "Mutantenschwein", rarity: 4 },
         { name: "Schweinhorn", rarity: 5 }
+    ],
+    [ // Generation 4
+        { name: "Senseschwein", rarity: 1 },
+        { name: "Jokerschwein", rarity: 1 },
+        { name: "Pianoschwein", rarity: 1 },
+        { name: "Ragnaröink", rarity: 1 },
+        { name: "Lucky Pork", rarity: 1 },
+        { name: "Breaking News Schwein", rarity: 1 },
+        { name: "Lil Pork", rarity: 2 },
+        { name: "Jasoink", rarity: 2 },
+        { name: "Freddy Grunzer", rarity: 3 },
+        { name: "Schraubenborsti", rarity: 3 },
+        { name: "Pixie Schwein", rarity: 4 },
+        { name: "Phönixschwein", rarity: 5 }
     ]
 ];
 const totalGenerations = generations.length;  // Gesamtanzahl der Generationen für Navigationslogik
@@ -406,10 +420,10 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <!-- Twitch Livestream links - mit automatischen Clips bei Offline-Status -->
+    <!-- Twitch Livestream links -->
     <div class="twitch-wrapper" id="twitchPlayer">
         <iframe 
-            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com&autoplay=true&muted=false&allowfullscreen=true" 
+            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
             frameborder="0" 
             allowfullscreen="true" 
             scrolling="no">
@@ -671,45 +685,11 @@ app.get('/:username', async (req, res) => {
     document.addEventListener('DOMContentLoaded', () => {
         setupLazyLoading();
         
-        // Initial prüfen, ob DevBox versteckt werden sollte
+        // Initial prüfen, ob DevBox versteckt werden sollte (falls Seite bereits gescrollt geladen wird)
         setTimeout(() => {
             handleScroll();
         }, 100);
-        
-        // Twitch Offline-Erkennung und Clips-Anzeige hinzufügen
-        setupTwitchClips();
     });
-    
-    // Funktion zum Erkennen des Offline-Status und Wechsel zu Clips
-    function setupTwitchClips() {
-        // Warte kurz, bis der Twitch-Player geladen ist
-        setTimeout(() => {
-            // Prüfe, ob der Offline-Screen sichtbar ist (der graue Bereich mit dem Offline-Text)
-            const offlineScreen = document.querySelector('.twitch-wrapper iframe').contentDocument?.querySelector('.offline-slide');
-            
-            if (offlineScreen) {
-                // Kanal ist offline, ersetzen durch Clips-Player
-                const twitchFrame = document.querySelector('.twitch-wrapper iframe');
-                const parentNode = twitchFrame.parentNode;
-                
-                // Alten Player entfernen
-                twitchFrame.remove();
-                
-                // Neuen Clips-Player laden
-                const clipsFrame = document.createElement('iframe');
-                clipsFrame.src = `https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com&autoplay=true&muted=false&allowfullscreen=true&collection=RANDOMID`;
-                clipsFrame.allowFullscreen = true;
-                clipsFrame.scrolling = "no";
-                clipsFrame.frameBorder = "0";
-                
-                // Neuen Player einfügen
-                parentNode.appendChild(clipsFrame);
-            }
-            
-            // Weiterhin regelmäßig prüfen (alle 60 Sekunden)
-            setTimeout(setupTwitchClips, 60000);
-        }, 5000);
-    }
 </script>
 </body>
 </html>`);
