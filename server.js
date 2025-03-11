@@ -96,6 +96,7 @@ const generations = [
         { name: "Schraubenborsti", rarity: 3 },
         { name: "Pixie Schwein", rarity: 4 },
         { name: "Phönixschwein", rarity: 5 }
+    ]
 ];
 const totalGenerations = generations.length;  // Gesamtanzahl der Generationen für Navigationslogik
 
