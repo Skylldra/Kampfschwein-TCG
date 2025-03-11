@@ -1,4 +1,4 @@
-//Final Version 10.03.2025
+//Versuch für Twitch Clips, wenn Kanal offline
 /**
  * Schweinchen-Sammelalbum Server
  * 
@@ -82,20 +82,6 @@ const generations = [
         { name: "Oinktron 3000", rarity: 3 },
         { name: "Mutantenschwein", rarity: 4 },
         { name: "Schweinhorn", rarity: 5 }
-    ],
-    [ // Generation 4
-        { name: "Senseschwein", rarity: 1 },
-        { name: "Jokerschwein", rarity: 1 },
-        { name: "Pianoschwein", rarity: 1 },
-        { name: "Ragnaröink", rarity: 1 },
-        { name: "Lucky Pork", rarity: 1 },
-        { name: "Breaking News Schwein", rarity: 1 },
-        { name: "Lil Pork", rarity: 2 },
-        { name: "Jasoink", rarity: 2 },
-        { name: "Freddy Grunzer", rarity: 3 },
-        { name: "Schraubenborsti", rarity: 3 },
-        { name: "Pixie Schwein", rarity: 4 },
-        { name: "Phönixschwein", rarity: 5 }
     ]
 ];
 const totalGenerations = generations.length;  // Gesamtanzahl der Generationen für Navigationslogik
@@ -420,15 +406,8 @@ app.get('/:username', async (req, res) => {
 </head>
 <body>
 
-    <!-- Twitch Livestream links -->
-    <div class="twitch-wrapper" id="twitchPlayer">
-        <iframe 
-            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
-            frameborder="0" 
-            allowfullscreen="true" 
-            scrolling="no">
-        </iframe>
-    </div>
+    <!-- Twitch Livestream links - automatischer Wechsel zu Clips bei Offline-Status -->
+    <div class="twitch-wrapper" id="twitchPlayer"></div>
 
     <!-- Streamplan rechts -->
     <div class="streamplan-wrapper" id="streamplanImage">
@@ -680,6 +659,43 @@ app.get('/:username', async (req, res) => {
     // Event-Listener hinzufügen
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleScroll, { passive: true }); // Auch bei Größenänderung prüfen
+    
+    // Twitch Embed API laden
+    const script = document.createElement('script');
+    script.src = "https://embed.twitch.tv/embed/v1.js";
+    document.body.appendChild(script);
+    
+    // Twitch Player initialisieren, wenn die API geladen ist
+    script.onload = function() {
+        const options = {
+            width: '100%',
+            height: '100%',
+            channel: 'kampfschwein90',
+            parent: ["kampfschwein-tcg.onrender.com"],
+            autoplay: true,
+        };
+        
+        const twitchPlayer = new Twitch.Embed("twitchPlayer", options);
+        const player = twitchPlayer.getPlayer();
+        
+        // Event-Listener für Offline-Status
+        twitchPlayer.addEventListener(Twitch.Embed.VIDEO_READY, () => {
+            player.addEventListener(Twitch.Player.OFFLINE, () => {
+                // Wenn Kanal offline ist, Clips-Player anzeigen
+                document.getElementById("twitchPlayer").innerHTML = '';
+                new Twitch.Embed("twitchPlayer", {
+                    width: '100%',
+                    height: '100%',
+                    channel: 'kampfschwein90',
+                    parent: ["kampfschwein-tcg.onrender.com"],
+                    autoplay: true,
+                    layout: 'video',
+                    collection: '', // Leer lassen, um die neuesten Clips zu zeigen
+                    clip: '' // Leer lassen, um die beliebtesten Clips zu zeigen
+                });
+            });
+        });
+    };
     
     // Lazy Loading beim Laden der Seite aktivieren
     document.addEventListener('DOMContentLoaded', () => {
