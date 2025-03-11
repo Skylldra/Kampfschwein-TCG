@@ -1,4 +1,4 @@
-//Versuch Clipplayer 3
+//Versuch Clipplay 5
 /**
  * Schweinchen-Sammelalbum Server
  * 
@@ -679,3 +679,64 @@ app.get('/:username', async (req, res) => {
 
     // Event-Listener hinzufügen
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true }); // Auch bei Größenänderung prüfen
+    
+    // Lazy Loading beim Laden der Seite aktivieren
+    document.addEventListener('DOMContentLoaded', () => {
+        setupLazyLoading();
+        
+        // Initial prüfen, ob DevBox versteckt werden sollte (falls Seite bereits gescrollt geladen wird)
+        setTimeout(() => {
+            handleScroll();
+        }, 100);
+    });
+</script>
+</body>
+</html>`);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Fehler beim Abrufen der Karten");
+    }
+});
+
+/**
+ * Route: Zufällige Karte an Benutzer verteilen
+ * Wählt basierend auf Seltenheitsgewichtungen eine zufällige Karte aus und fügt sie der Sammlung des Benutzers hinzu
+ * Verwendet ein gewichtetes Zufallssystem, bei dem seltenere Karten eine geringere Wahrscheinlichkeit haben
+ */
+app.get('/random/:username', async (req, res) => {
+    const username = req.params.username;
+    if (!username) return res.status(400).send("Fehlender Benutzername");
+
+    // Erstelle eine flache Liste aller Karten mit ihren Seltenheiten
+    const allCards = generations.flat();
+
+    // Berechne Gewichtungen basierend auf Seltenheit
+    // Jede Karte bekommt einen Gewichtungswert entsprechend ihrer Seltenheit
+    const probabilities = allCards.map(card => ({ 
+        card: card.name, 
+        weight: rarityWeights[card.rarity] || 15 
+    }));
+
+    // Gewichtete Zufallsauswahl einer Karte
+    // Summiert die Gewichte und wählt eine zufällige Position in dieser Summe
+    const totalWeight = probabilities.reduce((sum, item) => sum + item.weight, 0);
+    let threshold = Math.random() * totalWeight;
+    let selectedCard = probabilities.find(item => (threshold -= item.weight) <= 0)?.card || probabilities[0].card;
+
+    const date = new Date().toISOString().split('T')[0];
+
+    try {
+        // Speichern der gezogenen Karte in der Datenbank mit aktuellem Datum
+        await pool.query("INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)", [username, selectedCard, date]);
+        res.send(`${selectedCard}`);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Fehler beim Speichern der Karte");
+    }
+});
+
+// Server starten und auf eingestelltem Port lauschen
+app.listen(port, () => {
+    console.log(`Server läuft auf Port ${port}`);
+});
