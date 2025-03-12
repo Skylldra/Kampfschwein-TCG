@@ -1,4 +1,4 @@
-//Twitch Clips Test
+//Final Version 11.03.2025 Generation4
 /**
  * Schweinchen-Sammelalbum Server
  * 
@@ -495,7 +495,7 @@ app.get('/:username', async (req, res) => {
     async function checkStreamStatus() {
         try {
             // Überprüfen, ob der Streamer live ist
-            const response = await fetch(`https://api.twitch.tv/helix/streams?user_login=kampfschwein90`, {
+            const response = await fetch("https://api.twitch.tv/helix/streams?user_login=kampfschwein90", {
                 headers: {
                     'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',  // Öffentlicher Client-ID des Twitch Embedded Players
                     'Accept': 'application/vnd.twitchtv.v5+json'
@@ -539,7 +539,7 @@ app.get('/:username', async (req, res) => {
             const endTime = endDate.toISOString();
             
             // API-Anfrage für Clips
-            const response = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90&first=100&started_at=${startTime}&ended_at=${endTime}`, {
+            const response = await fetch("https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90&first=100&started_at=" + startTime + "&ended_at=" + endTime, {
                 headers: {
                     'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',  // Öffentlicher Client-ID des Twitch Embedded Players
                     'Accept': 'application/vnd.twitchtv.v5+json'
@@ -554,7 +554,7 @@ app.get('/:username', async (req, res) => {
                 startDate.setDate(startDate.getDate() - 305);  // ~1 Jahr insgesamt
                 const newStartTime = startDate.toISOString();
                 
-                const retryResponse = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90&first=100&started_at=${newStartTime}&ended_at=${endTime}`, {
+                const retryResponse = await fetch("https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90&first=100&started_at=" + newStartTime + "&ended_at=" + endTime, {
                     headers: {
                         'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
                         'Accept': 'application/vnd.twitchtv.v5+json'
@@ -588,7 +588,7 @@ app.get('/:username', async (req, res) => {
     async function loadClipsBackupMethod() {
         try {
             // Verwende den Endpoint für Top-Clips
-            const response = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90`, {
+            const response = await fetch("https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90", {
                 headers: {
                     'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
                     'Accept': 'application/vnd.twitchtv.v5+json'
@@ -653,7 +653,7 @@ app.get('/:username', async (req, res) => {
     function switchToLiveStream() {
         const twitchEmbed = document.getElementById('twitchEmbed');
         const parentDomain = window.location.hostname;
-        twitchEmbed.src = `https://player.twitch.tv/?channel=kampfschwein90&parent=${parentDomain}`;
+        twitchEmbed.src = "https://player.twitch.tv/?channel=kampfschwein90&parent=" + parentDomain;
     }
     
     /**
@@ -692,7 +692,7 @@ app.get('/:username', async (req, res) => {
         if (currentClip && (currentClip.id || currentClip.slug)) {
             // Erstelle die Clip-URL basierend auf Slug oder ID
             const clipId = currentClip.slug || currentClip.id;
-            twitchEmbed.src = `https://clips.twitch.tv/embed?clip=${clipId}&parent=${parentDomain}&autoplay=true`;
+            twitchEmbed.src = "https://clips.twitch.tv/embed?clip=" + clipId + "&parent=" + parentDomain + "&autoplay=true";
             
             // Event-Listener für das Ende des Clips
             // Da es kein natives Event für Clip-Ende gibt, verwenden wir eine Zeitschätzung
