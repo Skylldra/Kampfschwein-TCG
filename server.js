@@ -878,18 +878,35 @@ function playNextClip() {
     const parentDomain = window.location.hostname;
     
     if (currentClip && (currentClip.id || currentClip.slug)) {
-        // Erstelle die Clip-URL basierend auf Slug oder ID
+        // Erstelle die Clip-URL basierend auf Slug oder ID und deaktiviere empfohlene Videos am Ende
         const clipId = currentClip.slug || currentClip.id;
-        twitchEmbed.src = "https://clips.twitch.tv/embed?clip=" + clipId + "&parent=" + parentDomain + "&autoplay=true";
+        twitchEmbed.src = "https://clips.twitch.tv/embed?clip=" + clipId + "&parent=" + parentDomain + "&autoplay=true&allowfullscreen=true&muted=false&preload=auto&recommendations=false";
         
         // Verwende eine längere Standarddauer von 60 Sekunden, falls keine Dauer angegeben ist
         const clipDuration = currentClip.duration || 60; 
         
-        // Warte die volle Clip-Dauer ab, bevor zum nächsten Clip gewechselt wird
-        // Kein Fehler-Timeout mehr, das könnte das Problem sein
+        // Event listener für den Fall, dass der Clip endet
+        // Der Player wird beobachtet, um den Clip-Ende zu erkennen
+        const checkClipStatus = setInterval(() => {
+            // Prüfen, ob der Clip beendet ist oder ob Empfehlungen angezeigt werden
+            try {
+                // Wenn die Seite mit dem Player geladen ist, setzen wir einen MutationObserver ein
+                if (twitchEmbed.contentDocument && twitchEmbed.contentDocument.querySelector('.recommendations')) {
+                    // Recommendations sind sichtbar, der Clip ist zu Ende
+                    clearInterval(checkClipStatus);
+                    playNextClip();
+                }
+            } catch (e) {
+                // Fehler beim Zugriff auf den iframe-Inhalt (Same-Origin-Policy)
+                // In diesem Fall verlassen wir uns auf den Timer
+            }
+        }, 1000); // Überprüfe jede Sekunde
+        
+        // Zusätzlich zum Event-Listener verwenden wir einen Timer als Backup
         setTimeout(() => {
+            clearInterval(checkClipStatus);
             playNextClip();
-        }, (clipDuration + 3) * 1000); // +3 Sekunden Puffer
+        }, (clipDuration + 5) * 1000); // +5 Sekunden Puffer
     } else {
         // Wenn kein gültiger Clip verfügbar ist, erneut Clips laden
         loadClips().then(() => {
