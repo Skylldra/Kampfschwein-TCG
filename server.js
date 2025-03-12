@@ -1,4 +1,4 @@
-//Final Version 11.03.2025 Generation4
+//Weiter machen -> Clip wird vollständig abgespielt aber der nächste nicht, weil Vorschläge gemacht werden. Es werden auch nur die Fallbackclips abgespielt.
 /**
  * Schweinchen-Sammelalbum Server
  * 
