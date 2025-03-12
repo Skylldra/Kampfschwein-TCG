@@ -1,4 +1,4 @@
-//Final Version 11.03.2025 Generation4
+//Twitch Clips Test
 /**
  * Schweinchen-Sammelalbum Server
  * 
@@ -423,6 +423,7 @@ app.get('/:username', async (req, res) => {
     <!-- Twitch Livestream links -->
     <div class="twitch-wrapper" id="twitchPlayer">
         <iframe 
+            id="twitchEmbed"
             src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
             frameborder="0" 
             allowfullscreen="true" 
@@ -483,260 +484,226 @@ app.get('/:username', async (req, res) => {
     <script>
     let currentGen = 1;
     const totalGenerations = ${totalGenerations};
+    let isLive = false;
+    let clipsQueue = [];
+    let currentClipIndex = 0;
 
     /**
-     * Lazy-Loading für Kartenbilder
-     * Lädt Bilder erst, wenn sie in den sichtbaren Bereich des Browsers gelangen
-     * Spart Bandbreite und beschleunigt das initiale Laden der Seite
+     * Überprüft den Live-Status des Streamers und lädt Clips, wenn er offline ist
+     * Diese Funktion wird beim Laden der Seite und in regelmäßigen Intervallen aufgerufen
      */
-    function setupLazyLoading() {
-        let lazyImages = document.querySelectorAll("img.lazyload");
-        
-        // Sofort sichtbare Bilder laden
-        lazyImages.forEach(img => {
-            if (isInViewport(img)) {
-                img.src = img.dataset.src;
-                img.classList.remove("lazyload");
-            }
-        });
-        
-        // IntersectionObserver für Bilder, die durch Scrollen sichtbar werden
-        let observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    let img = entry.target;
-                    img.src = img.dataset.src;
-                    img.classList.remove("lazyload");
-                    observer.unobserve(img);
+    async function checkStreamStatus() {
+        try {
+            // Überprüfen, ob der Streamer live ist
+            const response = await fetch(`https://api.twitch.tv/helix/streams?user_login=kampfschwein90`, {
+                headers: {
+                    'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',  // Öffentlicher Client-ID des Twitch Embedded Players
+                    'Accept': 'application/vnd.twitchtv.v5+json'
                 }
             });
-        }, {
-            rootMargin: "100px" // Bilder werden geladen, wenn sie 100px vom Viewport entfernt sind
-        });
-
-        lazyImages.forEach(img => observer.observe(img));
-    }
-
-    /**
-     * Prüft, ob ein Element im sichtbaren Bereich (Viewport) des Browsers ist
-     * @param {HTMLElement} element - Das zu prüfende DOM-Element
-     * @return {boolean} true, wenn das Element sichtbar ist
-     */
-    function isInViewport(element) {
-        const rect = element.getBoundingClientRect();
-        return (
-            rect.top >= 0 &&
-            rect.left >= 0 &&
-            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-        );
-    }
-
-    /**
-     * Navigation zur vorherigen Generation
-     * Wird beim Klick auf den "Zurück"-Button ausgeführt
-     */
-    function prevGen() {
-        if (currentGen > 1) {
-            currentGen--;
-            updateGenDisplay();
+            
+            const data = await response.json();
+            isLive = data.data && data.data.length > 0;
+            
+            // Wenn der Streamer offline ist und wir noch keine Clips haben, lade Clips
+            if (!isLive && clipsQueue.length === 0) {
+                await loadClips();
+                playNextClip();
+            } else if (isLive) {
+                // Wenn der Streamer live ist, gehe zum Live-Stream zurück
+                switchToLiveStream();
+            }
+        } catch (error) {
+            console.error('Fehler beim Überprüfen des Stream-Status:', error);
+            // Bei Fehler: Versuche Clips zu laden, da wir den Status nicht sicher bestimmen können
+            if (clipsQueue.length === 0) {
+                await loadClips();
+                playNextClip();
+            }
         }
     }
 
     /**
-     * Navigation zur nächsten Generation
-     * Wird beim Klick auf den "Nächste Seite"-Button ausgeführt
+     * Lädt eine Liste von Clips des Streamers
+     * Verwendet die Twitch API, um populäre Clips zu erhalten
      */
-    function nextGen() {
-        if (currentGen < totalGenerations) {
-            currentGen++;
-            updateGenDisplay();
-        }
-    }
-
-    /**
-     * Aktualisiert die Anzeige nach einem Generationswechsel
-     * Versteckt alle Generationen außer der aktuell ausgewählten
-     * Lädt Bilder für die aktuelle Generation und lädt Bilder für die nächste Generation vor
-     */
-    function updateGenDisplay() {
-        // Aktualisiere den Generationstext
-        document.getElementById("gen-text").innerText = "Gen. " + currentGen;
-        
-        // Verstecke alle Generationen und zeige nur die aktuelle
-        for (let i = 1; i <= totalGenerations; i++) {
-            const genElement = document.getElementById("gen-" + i);
-            if (genElement) {
-                const isCurrentGen = i === currentGen;
-                genElement.style.display = isCurrentGen ? 'grid' : 'none';
+    async function loadClips() {
+        try {
+            // Zeitraum für Clips: Letzte 60 Tage
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 60);
+            const endDate = new Date();
+            
+            // Zeitstempel im ISO-Format für die API
+            const startTime = startDate.toISOString();
+            const endTime = endDate.toISOString();
+            
+            // API-Anfrage für Clips
+            const response = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90&first=100&started_at=${startTime}&ended_at=${endTime}`, {
+                headers: {
+                    'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',  // Öffentlicher Client-ID des Twitch Embedded Players
+                    'Accept': 'application/vnd.twitchtv.v5+json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            // Wenn keine Clips gefunden wurden, versuche es mit einem längeren Zeitraum
+            if (!data.data || data.data.length === 0) {
+                // Erweitere auf 1 Jahr
+                startDate.setDate(startDate.getDate() - 305);  // ~1 Jahr insgesamt
+                const newStartTime = startDate.toISOString();
                 
-                // Falls neue Generation geladen wird, Lazy Loading aktivieren
-                if (isCurrentGen) {
-                    const images = genElement.querySelectorAll('.card-img.lazyload');
-                    images.forEach(img => {
-                        if (img.getAttribute('data-src')) {
-                            img.src = img.getAttribute('data-src');
-                            img.classList.remove("lazyload");
-                        }
-                    });
-                }
-            }
-        }
-        
-        // Bilder für die nächste Generation vorladen (Performance-Optimierung)
-        const nextGen = currentGen + 1;
-        if (nextGen <= totalGenerations) {
-            const nextGenElement = document.getElementById("gen-" + nextGen);
-            if (nextGenElement) {
-                const nextGenImages = nextGenElement.querySelectorAll('.card-img.lazyload');
-                nextGenImages.forEach(img => {
-                    const preloadImage = new Image();
-                    preloadImage.src = img.getAttribute('data-src');
+                const retryResponse = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90&first=100&started_at=${newStartTime}&ended_at=${endTime}`, {
+                    headers: {
+                        'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
+                        'Accept': 'application/vnd.twitchtv.v5+json'
+                    }
                 });
+                
+                const retryData = await retryResponse.json();
+                clipsQueue = retryData.data || [];
+            } else {
+                clipsQueue = data.data;
             }
-        }
-        
-        // DevBox-Status nach Generationswechsel prüfen und aktualisieren
-        // Wichtig für mobile Ansicht, damit die DevBox nicht den Zurück-Button verdeckt
-        if (window.innerWidth <= 800) {
-            const isNearBottom = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 150;
-            const devBox = document.querySelector('.dev-box');
-            if (isNearBottom) {
-                devBox.classList.add('hidden');
-            }
-        }
-    }
-
-    /**
-     * Vergrößert eine Karte bei Klick
-     * Zeigt die Karte in einem Overlay über der Seite an
-     * @param {HTMLElement} card - Das Karten-Container-Element
-     */
-    function enlargeCard(card) {
-        document.getElementById('overlay-img').src = card.querySelector('img').src;
-        document.getElementById('overlay').style.display = 'flex';
-    }
-
-    /**
-     * Schließt die vergrößerte Kartenansicht
-     * Wird beim Klick auf das Overlay ausgeführt
-     */
-    function closeEnlarged() {
-        document.getElementById('overlay').style.display = 'none';
-    }
-
-    // DevBox bei Scrollen auf Handy ein-/ausblenden
-    let lastScrollPosition = 0;
-    let scrollThreshold = 50; // Mindestens 50px Scroll, um Aktion auszulösen
-    let scrollTimeout;
-
-    /**
-     * Behandelt das Scroll-Ereignis
-     * Blendet die DevBox auf mobilen Geräten ein oder aus, abhängig von der Scrollrichtung
-     * und der Position auf der Seite
-     */
-    function handleScroll() {
-        // Nur auf Mobilgeräten anwenden
-        if (window.innerWidth <= 800) {
-            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-            const devBox = document.querySelector('.dev-box');
             
-            // Ein-/Ausblenden basierend auf Scrollrichtung und -distanz
-            if (Math.abs(currentScroll - lastScrollPosition) > scrollThreshold) {
-                if (currentScroll > lastScrollPosition) {
-                    // Nach unten scrollen
-                    devBox.classList.add('hidden');
-                } else {
-                    // Nach oben scrollen
-                    devBox.classList.remove('hidden');
+            // Mische die Clips in zufälliger Reihenfolge
+            shuffleArray(clipsQueue);
+            
+            // Falls immer noch keine Clips gefunden wurden, nutze die Backup-Methode
+            if (clipsQueue.length === 0) {
+                await loadClipsBackupMethod();
+            }
+        } catch (error) {
+            console.error('Fehler beim Laden der Clips:', error);
+            // Bei Fehler: Verwende die Backup-Methode
+            await loadClipsBackupMethod();
+        }
+    }
+
+    /**
+     * Backup-Methode zum Laden von Clips
+     * Verwendet den Twitch API-Endpoint für Top-Clips, falls die reguläre Methode fehlschlägt
+     */
+    async function loadClipsBackupMethod() {
+        try {
+            // Verwende den Endpoint für Top-Clips
+            const response = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90`, {
+                headers: {
+                    'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
+                    'Accept': 'application/vnd.twitchtv.v5+json'
                 }
-                lastScrollPosition = currentScroll;
-            }
+            });
             
-            // Immer anzeigen, wenn oben auf der Seite
-            if (currentScroll <= 10) {
-                devBox.classList.remove('hidden');
-            }
+            const data = await response.json();
+            clipsQueue = data.data || [];
             
-            // Prüfen, ob Benutzer am Ende der Seite ist (mit etwas Toleranz)
-            const isNearBottom = (window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 150;
-            if (isNearBottom) {
-                devBox.classList.add('hidden');
-                // Timeout löschen, damit die Box am Ende der Seite nicht wieder erscheint
-                clearTimeout(scrollTimeout);
-                return;
-            }
+            // Mische die Clips in zufälliger Reihenfolge
+            shuffleArray(clipsQueue);
             
-            // Nach Scrollstopp wieder anzeigen, aber nur wenn nicht am Ende der Seite
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                if (!((window.innerHeight + window.pageYOffset) >= document.body.offsetHeight - 150)) {
-                    devBox.classList.remove('hidden');
-                }
-            }, 1500);
+            // Wenn immer noch keine Clips gefunden wurden, verwende die direkte Clips-URL-Methode
+            if (clipsQueue.length === 0) {
+                await fetchClipsFromTwitchPage();
+            }
+        } catch (error) {
+            console.error('Fehler bei der Backup-Methode zum Laden von Clips:', error);
+            await fetchClipsFromTwitchPage();
         }
     }
 
-    // Event-Listener hinzufügen
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll, { passive: true }); // Auch bei Größenänderung prüfen
+    /**
+     * Alternative Methode: Extrahiere Clip-IDs direkt von der Twitch-Kanal-Seite
+     * Diese Methode wird verwendet, wenn die API-Methoden fehlschlagen
+     */
+    async function fetchClipsFromTwitchPage() {
+        try {
+            // Erstelle eine Liste hart codierter Fallback-Clip-Slugs
+            // Diese werden nur verwendet, wenn alle API-Methoden fehlschlagen
+            const fallbackClipSlugs = [
+                'GleamingSpineyOxDancingBaby',
+                'CrispyFrozenWatermelonArgieB8',
+                'TemperedFrozenSrirachaOSsloth'
+            ];
+            
+            clipsQueue = fallbackClipSlugs.map(slug => ({
+                id: slug,
+                slug: slug
+            }));
+        } catch (error) {
+            console.error('Fehler beim Laden von Clips von der Twitch-Seite:', error);
+            // Wenn alle Methoden fehlschlagen, verwenden wir einen leeren Array
+            clipsQueue = [];
+        }
+    }
+
+    /**
+     * Hilfsfunktion zum zufälligen Mischen eines Arrays (Fisher-Yates-Algorithmus)
+     * @param {Array} array - Das zu mischende Array
+     */
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
     
-    // Lazy Loading beim Laden der Seite aktivieren
-    document.addEventListener('DOMContentLoaded', () => {
-        setupLazyLoading();
+    /**
+     * Wechselt zum Live-Stream zurück
+     */
+    function switchToLiveStream() {
+        const twitchEmbed = document.getElementById('twitchEmbed');
+        const parentDomain = window.location.hostname;
+        twitchEmbed.src = `https://player.twitch.tv/?channel=kampfschwein90&parent=${parentDomain}`;
+    }
+    
+    /**
+     * Spielt den nächsten Clip in der Warteschlange ab
+     */
+    function playNextClip() {
+        if (isLive) {
+            // Wenn der Stream wieder live ist, nicht zum nächsten Clip wechseln
+            switchToLiveStream();
+            return;
+        }
         
-        // Initial prüfen, ob DevBox versteckt werden sollte (falls Seite bereits gescrollt geladen wird)
-        setTimeout(() => {
-            handleScroll();
-        }, 100);
-    });
-</script>
-</body>
-</html>`);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Fehler beim Abrufen der Karten");
-    }
-});
-
-/**
- * Route: Zufällige Karte an Benutzer verteilen
- * Wählt basierend auf Seltenheitsgewichtungen eine zufällige Karte aus und fügt sie der Sammlung des Benutzers hinzu
- * Verwendet ein gewichtetes Zufallssystem, bei dem seltenere Karten eine geringere Wahrscheinlichkeit haben
- */
-app.get('/random/:username', async (req, res) => {
-    const username = req.params.username;
-    if (!username) return res.status(400).send("Fehlender Benutzername");
-
-    // Erstelle eine flache Liste aller Karten mit ihren Seltenheiten
-    const allCards = generations.flat();
-
-    // Berechne Gewichtungen basierend auf Seltenheit
-    // Jede Karte bekommt einen Gewichtungswert entsprechend ihrer Seltenheit
-    const probabilities = allCards.map(card => ({ 
-        card: card.name, 
-        weight: rarityWeights[card.rarity] || 15 
-    }));
-
-    // Gewichtete Zufallsauswahl einer Karte
-    // Summiert die Gewichte und wählt eine zufällige Position in dieser Summe
-    const totalWeight = probabilities.reduce((sum, item) => sum + item.weight, 0);
-    let threshold = Math.random() * totalWeight;
-    let selectedCard = probabilities.find(item => (threshold -= item.weight) <= 0)?.card || probabilities[0].card;
-
-    const date = new Date().toISOString().split('T')[0];
-
-    try {
-        // Speichern der gezogenen Karte in der Datenbank mit aktuellem Datum
-        await pool.query("INSERT INTO user_cards (username, card_name, obtained_date) VALUES ($1, $2, $3)", [username, selectedCard, date]);
-        res.send(`${selectedCard}`);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Fehler beim Speichern der Karte");
-    }
-});
-
-// Server starten und auf eingestelltem Port lauschen
-app.listen(port, () => {
-    console.log(`Server läuft auf Port ${port}`);
-});
+        if (clipsQueue.length === 0) {
+            // Wenn keine Clips vorhanden sind, lade sie erneut
+            loadClips().then(() => {
+                playNextClip();
+            });
+            return;
+        }
+        
+        // Nächsten Clip aus der Warteschlange holen
+        if (currentClipIndex >= clipsQueue.length) {
+            // Wenn wir am Ende der Warteschlange sind, von vorne beginnen
+            currentClipIndex = 0;
+            // Optional: Die Clips neu mischen für mehr Abwechslung
+            shuffleArray(clipsQueue);
+        }
+        
+        const currentClip = clipsQueue[currentClipIndex];
+        currentClipIndex++;
+        
+        // Twitch Player auf Clip-Modus umstellen
+        const twitchEmbed = document.getElementById('twitchEmbed');
+        const parentDomain = window.location.hostname;
+        
+        if (currentClip && (currentClip.id || currentClip.slug)) {
+            // Erstelle die Clip-URL basierend auf Slug oder ID
+            const clipId = currentClip.slug || currentClip.id;
+            twitchEmbed.src = `https://clips.twitch.tv/embed?clip=${clipId}&parent=${parentDomain}&autoplay=true`;
+            
+            // Event-Listener für das Ende des Clips
+            // Da es kein natives Event für Clip-Ende gibt, verwenden wir eine Zeitschätzung
+            const clipDuration = currentClip.duration || 30; // Standarddauer 30 Sekunden falls nicht angegeben
+            setTimeout(() => {
+                // Nach Ablauf der geschätzten Clip-Dauer zum nächsten Clip wechseln
+                playNextClip();
+            }, (clipDuration + 2) * 1000); // +2 Sekunden Puffer
+        } else {
+            // Wenn kein gültiger Clip verfügbar ist, erneut Clips laden
+            loadClips().then(() => {
+                playNextClip();
+            });
+        }
