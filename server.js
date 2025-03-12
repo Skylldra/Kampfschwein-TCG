@@ -882,21 +882,14 @@ function playNextClip() {
         const clipId = currentClip.slug || currentClip.id;
         twitchEmbed.src = "https://clips.twitch.tv/embed?clip=" + clipId + "&parent=" + parentDomain + "&autoplay=true";
         
-        // Event-Listener für Fehler hinzufügen (für nicht verfügbare Clips)
-        const errorTimeout = setTimeout(() => {
-            // Nach 5 Sekunden prüfen, ob der Clip erfolgreich geladen wurde
-            // Wenn nicht, zum nächsten Clip wechseln
-            playNextClip();
-        }, 5000);
+        // Verwende eine längere Standarddauer von 60 Sekunden, falls keine Dauer angegeben ist
+        const clipDuration = currentClip.duration || 60; 
         
-        // Event-Listener für das Ende des Clips
-        // Da es kein natives Event für Clip-Ende gibt, verwenden wir eine Zeitschätzung
-        const clipDuration = currentClip.duration || 30; // Standarddauer 30 Sekunden falls nicht angegeben
-        const playTimeout = setTimeout(() => {
-            // Nach Ablauf der geschätzten Clip-Dauer zum nächsten Clip wechseln
-            clearTimeout(errorTimeout); // Fehlertimeout löschen
+        // Warte die volle Clip-Dauer ab, bevor zum nächsten Clip gewechselt wird
+        // Kein Fehler-Timeout mehr, das könnte das Problem sein
+        setTimeout(() => {
             playNextClip();
-        }, (clipDuration + 2) * 1000); // +2 Sekunden Puffer
+        }, (clipDuration + 3) * 1000); // +3 Sekunden Puffer
     } else {
         // Wenn kein gültiger Clip verfügbar ist, erneut Clips laden
         loadClips().then(() => {
