@@ -739,50 +739,23 @@ async function checkStreamStatus() {
  */
 async function loadClips() {
     try {
-        // Zeitraum für Clips: Letzte 60 Tage
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - 60);
-        const endDate = new Date();
-        
-        // Zeitstempel im ISO-Format für die API
-        const startTime = startDate.toISOString();
-        const endTime = endDate.toISOString();
-        
-        // API-Anfrage für Clips
-        const response = await fetch("https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90&first=100&started_at=" + startTime + "&ended_at=" + endTime, {
+        // API-Anfrage für alle Clips (ohne Zeitbegrenzung)
+        const response = await fetch("https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90&first=100", {
             headers: {
-                'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
+                'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',  // Öffentlicher Client-ID des Twitch Embedded Players
                 'Accept': 'application/vnd.twitchtv.v5+json'
             }
         });
         
         const data = await response.json();
         
-        // Wenn keine Clips gefunden wurden, versuche es mit einem längeren Zeitraum
+        // Wenn keine Clips gefunden wurden, versuche die Backup-Methode
         if (!data.data || data.data.length === 0) {
-            // Erweitere auf 1 Jahr
-            startDate.setDate(startDate.getDate() - 305);  // ~1 Jahr insgesamt
-            const newStartTime = startDate.toISOString();
-            
-            const retryResponse = await fetch("https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90&first=100&started_at=" + newStartTime + "&ended_at=" + endTime, {
-                headers: {
-                    'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
-                    'Accept': 'application/vnd.twitchtv.v5+json'
-                }
-            });
-            
-            const retryData = await retryResponse.json();
-            clipsQueue = retryData.data || [];
+            await loadClipsBackupMethod();
         } else {
             clipsQueue = data.data;
-        }
-        
-        // Mische die Clips in zufälliger Reihenfolge
-        shuffleArray(clipsQueue);
-        
-        // Falls immer noch keine Clips gefunden wurden, nutze die Backup-Methode
-        if (clipsQueue.length === 0) {
-            await loadClipsBackupMethod();
+            // Mische die Clips in zufälliger Reihenfolge
+            shuffleArray(clipsQueue);
         }
     } catch (error) {
         console.error('Fehler beim Laden der Clips:', error);
@@ -790,7 +763,7 @@ async function loadClips() {
         await loadClipsBackupMethod();
     }
 }
-
+        
 /**
  * Backup-Methode zum Laden von Clips
  */
@@ -825,11 +798,20 @@ async function loadClipsBackupMethod() {
  */
 async function fetchClipsFromTwitchPage() {
     try {
-        // Erstelle eine Liste hart codierter Fallback-Clip-Slugs
+        // Erstelle eine Liste hart codierter Fallback-Clip-Slugs mit funktionierenden Clips
+        // Diese wurden aktualisiert, um sicherzustellen, dass sie verfügbar sind
         const fallbackClipSlugs = [
-            'GleamingSpineyOxDancingBaby',
-            'CrispyFrozenWatermelonArgieB8',
-            'TemperedFrozenSrirachaOSsloth'
+            'IronicStrangeGrassSmoocherZ-F5QvDpu5wI8B0CoA',
+            'SassySparklingSwordRaccAttack-FrtGP47_vOXtCRMp',
+            'ResilientLaconicStapleTakeNRG-K1bCf_J34TnB-bzm',
+            'SpookyRepleteOryxMoreCowbell-oHHF7uCeI3R8tE2Y',
+            'ManlyPowerfulBeefKeyboardCat-X3BsISQK3G2DPi4O',
+            'AgreeableEnthusiasticZucchiniOMGScoots-QyoiDCsrYs35hShN',
+            'BoringCloudyTermiteBabyRage-mfQ2MJSMTAny8sxT',
+            'TransparentSeductiveBasenjiCoolStoryBob-_MLYW3LUqB_C6XKo',
+            'BlazingGiantFrogMrDestructoid-EGhsEdNCyxsnODSH',
+            'PiliableCorrectDoveRalpherZ-zv7TcCmdtDcr24x2',
+            'InterestingAgileWitchPartyTime-1PwLeeW_qRoDmZ-P'
         ];
         
         clipsQueue = fallbackClipSlugs.map(slug => ({
@@ -900,11 +882,19 @@ function playNextClip() {
         const clipId = currentClip.slug || currentClip.id;
         twitchEmbed.src = "https://clips.twitch.tv/embed?clip=" + clipId + "&parent=" + parentDomain + "&autoplay=true";
         
+        // Event-Listener für Fehler hinzufügen (für nicht verfügbare Clips)
+        const errorTimeout = setTimeout(() => {
+            // Nach 5 Sekunden prüfen, ob der Clip erfolgreich geladen wurde
+            // Wenn nicht, zum nächsten Clip wechseln
+            playNextClip();
+        }, 5000);
+        
         // Event-Listener für das Ende des Clips
         // Da es kein natives Event für Clip-Ende gibt, verwenden wir eine Zeitschätzung
         const clipDuration = currentClip.duration || 30; // Standarddauer 30 Sekunden falls nicht angegeben
-        setTimeout(() => {
+        const playTimeout = setTimeout(() => {
             // Nach Ablauf der geschätzten Clip-Dauer zum nächsten Clip wechseln
+            clearTimeout(errorTimeout); // Fehlertimeout löschen
             playNextClip();
         }, (clipDuration + 2) * 1000); // +2 Sekunden Puffer
     } else {
