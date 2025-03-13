@@ -1,4 +1,4 @@
-//Weiter machen -> Clip wird vollständig abgespielt aber der nächste nicht, weil Vorschläge gemacht werden. Es werden auch nur die Fallbackclips abgespielt.
+//Final Version 11.03.2025 Generation4
 /**
  * Schweinchen-Sammelalbum Server
  * 
@@ -421,15 +421,14 @@ app.get('/:username', async (req, res) => {
 <body>
 
     <!-- Twitch Livestream links -->
-<div class="twitch-wrapper" id="twitchPlayer">
-    <iframe 
-        id="twitchEmbed"
-        src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
-        frameborder="0" 
-        allowfullscreen="true" 
-        scrolling="no">
-    </iframe>
-</div>
+    <div class="twitch-wrapper" id="twitchPlayer">
+        <iframe 
+            src="https://player.twitch.tv/?channel=kampfschwein90&parent=kampfschwein-tcg.onrender.com" 
+            frameborder="0" 
+            allowfullscreen="true" 
+            scrolling="no">
+        </iframe>
+    </div>
 
     <!-- Streamplan rechts -->
     <div class="streamplan-wrapper" id="streamplanImage">
@@ -482,9 +481,6 @@ app.get('/:username', async (req, res) => {
     </div>
 
     <script>
-    let isLive = false;
-let clipsQueue = [];
-let currentClipIndex = 0;
     let currentGen = 1;
     const totalGenerations = ${totalGenerations};
 
@@ -503,12 +499,6 @@ let currentClipIndex = 0;
                 img.classList.remove("lazyload");
             }
         });
-
-        // Stream-Status regelmäßig überprüfen (alle 5 Minuten)
-setInterval(checkStreamStatus, 300000);
-
-// Stream-Status beim Laden überprüfen
-checkStreamStatus();
         
         // IntersectionObserver für Bilder, die durch Scrollen sichtbar werden
         let observer = new IntersectionObserver(entries => {
@@ -700,266 +690,6 @@ checkStreamStatus();
             handleScroll();
         }, 100);
     });
-    /**
- * Überprüft den Live-Status des Streamers und lädt Clips, wenn er offline ist
- */
-async function checkStreamStatus() {
-    try {
-        // Überprüfen, ob der Streamer live ist
-        const response = await fetch("https://api.twitch.tv/helix/streams?user_login=kampfschwein90", {
-            headers: {
-                'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',  // Öffentlicher Client-ID des Twitch Embedded Players
-                'Accept': 'application/vnd.twitchtv.v5+json'
-            }
-        });
-        
-        const data = await response.json();
-        isLive = data.data && data.data.length > 0;
-        
-        // Wenn der Streamer offline ist und wir noch keine Clips haben, lade Clips
-        if (!isLive && clipsQueue.length === 0) {
-            await loadClips();
-            playNextClip();
-        } else if (isLive) {
-            // Wenn der Streamer live ist, gehe zum Live-Stream zurück
-            switchToLiveStream();
-        }
-    } catch (error) {
-        console.error('Fehler beim Überprüfen des Stream-Status:', error);
-        // Bei Fehler: Versuche Clips zu laden
-        if (clipsQueue.length === 0) {
-            await loadClips();
-            playNextClip();
-        }
-    }
-}
-
-/**
- * Lädt eine Liste von Clips des Streamers
- */
-async function loadClips() {
-    try {
-        // Zuerst die User-ID des Streamers abrufen
-        const userResponse = await fetch("https://api.twitch.tv/helix/users?login=kampfschwein90", {
-            headers: {
-                'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
-                'Accept': 'application/vnd.twitchtv.v5+json'
-            }
-        });
-        
-        const userData = await userResponse.json();
-        let broadcasterId = null;
-        
-        if (userData.data && userData.data.length > 0) {
-            broadcasterId = userData.data[0].id;
-            console.log("Broadcaster ID gefunden:", broadcasterId);
-        } else {
-            console.error("Konnte keine User-ID für kampfschwein90 finden");
-            await loadClipsBackupMethod();
-            return;
-        }
-        
-        // API-Anfrage für alle Clips mit der korrekten broadcaster_id
-        const response = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${broadcasterId}&first=100`, {
-            headers: {
-                'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
-                'Accept': 'application/vnd.twitchtv.v5+json'
-            }
-        });
-        
-        const data = await response.json();
-        
-        // Wenn Clips gefunden wurden, diese verwenden
-        if (data.data && data.data.length > 0) {
-            console.log(`${data.data.length} Clips von Twitch geladen`);
-            clipsQueue = data.data;
-            // Mische die Clips in zufälliger Reihenfolge
-            shuffleArray(clipsQueue);
-            return; // Früher zurückkehren
-        }
-        
-        // Wenn keine Clips gefunden wurden, versuche die Backup-Methode
-        await loadClipsBackupMethod();
-    } catch (error) {
-        console.error('Fehler beim Laden der Clips:', error);
-        // Bei Fehler: Verwende die Backup-Methode
-        await loadClipsBackupMethod();
-    }
-}
-        
-/**
- * Backup-Methode zum Laden von Clips
- */
-async function loadClipsBackupMethod() {
-    try {
-        // Verwende den Endpoint für Top-Clips
-        const response = await fetch("https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90", {
-            headers: {
-                'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
-                'Accept': 'application/vnd.twitchtv.v5+json'
-            }
-        });
-        
-        const data = await response.json();
-        clipsQueue = data.data || [];
-        
-        // Mische die Clips in zufälliger Reihenfolge
-        shuffleArray(clipsQueue);
-        
-        // Wenn immer noch keine Clips gefunden wurden, verwende die direkte Clips-URL-Methode
-        if (clipsQueue.length === 0) {
-            await fetchClipsFromTwitchPage();
-        }
-    } catch (error) {
-        console.error('Fehler bei der Backup-Methode zum Laden von Clips:', error);
-        await fetchClipsFromTwitchPage();
-    }
-}
-
-/**
- * Alternative Methode: Verwende Fallback-Clips
- */
-async function fetchClipsFromTwitchPage() {
-    try {
-        // Erstelle eine Liste hart codierter Fallback-Clip-Slugs mit funktionierenden Clips
-        // Diese wurden aktualisiert, um sicherzustellen, dass sie verfügbar sind
-        const fallbackClipSlugs = [
-            'IronicStrangeGrassSmoocherZ-F5QvDpu5wI8B0CoA',
-            'SassySparklingSwordRaccAttack-FrtGP47_vOXtCRMp',
-            'ResilientLaconicStapleTakeNRG-K1bCf_J34TnB-bzm',
-            'SpookyRepleteOryxMoreCowbell-oHHF7uCeI3R8tE2Y',
-            'ManlyPowerfulBeefKeyboardCat-X3BsISQK3G2DPi4O',
-            'AgreeableEnthusiasticZucchiniOMGScoots-QyoiDCsrYs35hShN',
-            'BoringCloudyTermiteBabyRage-mfQ2MJSMTAny8sxT',
-            'TransparentSeductiveBasenjiCoolStoryBob-_MLYW3LUqB_C6XKo',
-            'BlazingGiantFrogMrDestructoid-EGhsEdNCyxsnODSH',
-            'PiliableCorrectDoveRalpherZ-zv7TcCmdtDcr24x2',
-            'InterestingAgileWitchPartyTime-1PwLeeW_qRoDmZ-P'
-        ];
-        
-        clipsQueue = fallbackClipSlugs.map(slug => ({
-            id: slug,
-            slug: slug
-        }));
-    } catch (error) {
-        console.error('Fehler beim Laden von Clips von der Twitch-Seite:', error);
-        // Wenn alle Methoden fehlschlagen, verwenden wir einen leeren Array
-        clipsQueue = [];
-    }
-}
-
-/**
- * Hilfsfunktion zum zufälligen Mischen eines Arrays
- */
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-}
-
-/**
- * Wechselt zum Live-Stream zurück
- */
-function switchToLiveStream() {
-    const twitchEmbed = document.getElementById('twitchEmbed');
-    const parentDomain = window.location.hostname;
-    twitchEmbed.src = "https://player.twitch.tv/?channel=kampfschwein90&parent=" + parentDomain;
-}
-
-/**
- * Spielt den nächsten Clip in der Warteschlange ab
- */
-function playNextClip() {
-    if (isLive) {
-        // Wenn der Stream wieder live ist, nicht zum nächsten Clip wechseln
-        switchToLiveStream();
-        return;
-    }
-    
-    if (clipsQueue.length === 0) {
-        // Wenn keine Clips vorhanden sind, lade sie erneut
-        loadClips().then(() => {
-            playNextClip();
-        });
-        return;
-    }
-    
-    // Nächsten Clip aus der Warteschlange holen
-    if (currentClipIndex >= clipsQueue.length) {
-        // Wenn wir am Ende der Warteschlange sind, von vorne beginnen
-        currentClipIndex = 0;
-        // Optional: Die Clips neu mischen für mehr Abwechslung
-        shuffleArray(clipsQueue);
-    }
-    
-    const currentClip = clipsQueue[currentClipIndex];
-    currentClipIndex++;
-    
-    // Twitch Player auf Clip-Modus umstellen
-    const twitchEmbed = document.getElementById('twitchEmbed');
-    const parentDomain = window.location.hostname;
-    
-    if (currentClip && (currentClip.id || currentClip.slug)) {
-        // Erstelle die Clip-URL basierend auf Slug oder ID
-        const clipId = currentClip.slug || currentClip.id;
-        
-        // Vollständig neuer Embed-URL-Parameter, um automatische Wiedergabe zu erzwingen
-        const clipUrl = `https://clips.twitch.tv/embed?clip=${clipId}&parent=${parentDomain}&autoplay=true&muted=false`;
-        console.log("Starte Clip:", clipUrl);
-        twitchEmbed.src = clipUrl;
-        
-        // Alternative Erkennungsmethode: Verwende einen nicht-interaktiven Ansatz
-        // Da wir auf den iframe nicht zugreifen können (Same-Origin), verwenden wir mehrere Fallback-Timer
-        
-        // Trick: Wir erzeugen ein neues unsichtbares iframe, das den ClipInfo-Endpunkt aufruft,
-        // um eine genauere Dauer zu bekommen
-        const clipInfoFrame = document.createElement('iframe');
-        clipInfoFrame.style.display = 'none';
-        clipInfoFrame.src = `https://clips.twitch.tv/api/v2/clips/${clipId}/status`;
-        document.body.appendChild(clipInfoFrame);
-        
-        // Standarddauer als Ausgangspunkt
-        let clipDuration = currentClip.duration || 30;
-        
-        // Komplexes System von Timern, um das Ende eines Clips zu erkennen
-        
-        // Timer 1: Ein kurzer Timer, der prüft, ob der Clip korrekt gestartet ist
-        setTimeout(() => {
-            // Falls das iframe leer oder fehlerhaft ist, zum nächsten Clip wechseln
-            try {
-                if (twitchEmbed.contentDocument && 
-                    twitchEmbed.contentDocument.body && 
-                    twitchEmbed.contentDocument.body.innerHTML.includes('error')) {
-                    console.log("Clip konnte nicht geladen werden, wechsle zum nächsten");
-                    playNextClip();
-                    return;
-                }
-            } catch (e) {
-                // Same-Origin-Fehler ignorieren
-            }
-        }, 5000);
-        
-        // Timer 2: Warte die geschätzte Clip-Dauer plus einen Puffer
-        setTimeout(() => {
-            console.log("Clip-Dauer abgelaufen, wechsle zum nächsten");
-            playNextClip();
-        }, (clipDuration + 5) * 1000);
-        
-        // Timer 3: Ein längerer Worst-Case-Timeout
-        setTimeout(() => {
-            // Entferne das Info-iframe
-            if (clipInfoFrame && clipInfoFrame.parentNode) {
-                clipInfoFrame.parentNode.removeChild(clipInfoFrame);
-            }
-        }, (clipDuration + 10) * 1000);
-    } else {
-        // Wenn kein gültiger Clip verfügbar ist, erneut Clips laden
-        loadClips().then(() => {
-            playNextClip();
-        });
-    }
-}
 </script>
 </body>
 </html>`);
