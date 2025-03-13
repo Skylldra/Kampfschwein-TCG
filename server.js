@@ -739,24 +739,47 @@ async function checkStreamStatus() {
  */
 async function loadClips() {
     try {
-        // API-Anfrage für alle Clips (ohne Zeitbegrenzung)
-        const response = await fetch("https://api.twitch.tv/helix/clips?broadcaster_id=kampfschwein90&first=100", {
+        // Zuerst die User-ID des Streamers abrufen
+        const userResponse = await fetch("https://api.twitch.tv/helix/users?login=kampfschwein90", {
             headers: {
-                'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',  // Öffentlicher Client-ID des Twitch Embedded Players
+                'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
+                'Accept': 'application/vnd.twitchtv.v5+json'
+            }
+        });
+        
+        const userData = await userResponse.json();
+        let broadcasterId = null;
+        
+        if (userData.data && userData.data.length > 0) {
+            broadcasterId = userData.data[0].id;
+            console.log("Broadcaster ID gefunden:", broadcasterId);
+        } else {
+            console.error("Konnte keine User-ID für kampfschwein90 finden");
+            await loadClipsBackupMethod();
+            return;
+        }
+        
+        // API-Anfrage für alle Clips mit der korrekten broadcaster_id
+        const response = await fetch(`https://api.twitch.tv/helix/clips?broadcaster_id=${broadcasterId}&first=100`, {
+            headers: {
+                'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
                 'Accept': 'application/vnd.twitchtv.v5+json'
             }
         });
         
         const data = await response.json();
         
-        // Wenn keine Clips gefunden wurden, versuche die Backup-Methode
-        if (!data.data || data.data.length === 0) {
-            await loadClipsBackupMethod();
-        } else {
+        // Wenn Clips gefunden wurden, diese verwenden
+        if (data.data && data.data.length > 0) {
+            console.log(`${data.data.length} Clips von Twitch geladen`);
             clipsQueue = data.data;
             // Mische die Clips in zufälliger Reihenfolge
             shuffleArray(clipsQueue);
+            return; // Früher zurückkehren
         }
+        
+        // Wenn keine Clips gefunden wurden, versuche die Backup-Methode
+        await loadClipsBackupMethod();
     } catch (error) {
         console.error('Fehler beim Laden der Clips:', error);
         // Bei Fehler: Verwende die Backup-Methode
@@ -880,54 +903,56 @@ function playNextClip() {
     if (currentClip && (currentClip.id || currentClip.slug)) {
         // Erstelle die Clip-URL basierend auf Slug oder ID
         const clipId = currentClip.slug || currentClip.id;
-        twitchEmbed.src = "https://clips.twitch.tv/embed?clip=" + clipId + "&parent=" + parentDomain + "&autoplay=true";
         
-        // Verwende eine abgeschätzte Dauer basierend auf dem spezifischen Clip
-        // Die meisten Twitch Clips sind 30-60 Sekunden lang
-        // Wir verwenden die duration des Clips, falls verfügbar, oder einen geschätzten Wert
-        const clipDuration = currentClip.duration || 45; // 45 Sekunden als Standarddauer
+        // Vollständig neuer Embed-URL-Parameter, um automatische Wiedergabe zu erzwingen
+        const clipUrl = `https://clips.twitch.tv/embed?clip=${clipId}&parent=${parentDomain}&autoplay=true&muted=false`;
+        console.log("Starte Clip:", clipUrl);
+        twitchEmbed.src = clipUrl;
         
-        // Drei Methoden zum Erkennen des Clip-Endes:
+        // Alternative Erkennungsmethode: Verwende einen nicht-interaktiven Ansatz
+        // Da wir auf den iframe nicht zugreifen können (Same-Origin), verwenden wir mehrere Fallback-Timer
         
-        // 1. Haupttimer: Nach Ablauf der geschätzten Dauer plus Buffer
-        const mainTimer = setTimeout(() => {
-            // Der Haupttimer ist abgelaufen, zum nächsten Clip wechseln
-            if (clipEndDetected) return; // Verhindert doppelte Ausführung
-            clipEndDetected = true;
-            playNextClip();
-        }, (clipDuration + 5) * 1000); // +5 Sekunden Puffer
+        // Trick: Wir erzeugen ein neues unsichtbares iframe, das den ClipInfo-Endpunkt aufruft,
+        // um eine genauere Dauer zu bekommen
+        const clipInfoFrame = document.createElement('iframe');
+        clipInfoFrame.style.display = 'none';
+        clipInfoFrame.src = `https://clips.twitch.tv/api/v2/clips/${clipId}/status`;
+        document.body.appendChild(clipInfoFrame);
         
-        // 2. Frühes Erkennen neuer Clips oder Empfehlungen
-        let clipEndDetected = false;
-        const clipCheckInterval = setInterval(() => {
-            // Wenn ein Clip beendet ist, könnte die Seite entweder Empfehlungen anzeigen
-            // oder einen anderen Indikator für das Ende haben
+        // Standarddauer als Ausgangspunkt
+        let clipDuration = currentClip.duration || 30;
+        
+        // Komplexes System von Timern, um das Ende eines Clips zu erkennen
+        
+        // Timer 1: Ein kurzer Timer, der prüft, ob der Clip korrekt gestartet ist
+        setTimeout(() => {
+            // Falls das iframe leer oder fehlerhaft ist, zum nächsten Clip wechseln
             try {
-                const iframe = twitchEmbed.contentWindow;
-                // Wenn wir sehen, dass der Player nicht mehr aktiv ist oder Empfehlungen anzeigt
-                if (iframe && iframe.document && (
-                    iframe.document.querySelector('.recommendations') || 
-                    !iframe.document.querySelector('.player-controls-bottom') ||
-                    iframe.document.querySelector('.player-overlay'))) {
-                    
-                    if (clipEndDetected) return; // Verhindert doppelte Ausführung
-                    clipEndDetected = true;
-                    clearInterval(clipCheckInterval);
-                    clearTimeout(mainTimer);
+                if (twitchEmbed.contentDocument && 
+                    twitchEmbed.contentDocument.body && 
+                    twitchEmbed.contentDocument.body.innerHTML.includes('error')) {
+                    console.log("Clip konnte nicht geladen werden, wechsle zum nächsten");
                     playNextClip();
+                    return;
                 }
             } catch (e) {
-                // Cross-Origin-Fehler werden ignoriert
+                // Same-Origin-Fehler ignorieren
             }
-        }, 1000); // Alle 1 Sekunde prüfen
+        }, 5000);
         
-        // 3. Sicherheits-Timer: Falls alle anderen Methoden fehlschlagen
+        // Timer 2: Warte die geschätzte Clip-Dauer plus einen Puffer
         setTimeout(() => {
-            clearInterval(clipCheckInterval);
-            if (clipEndDetected) return; // Verhindert doppelte Ausführung
-            clipEndDetected = true;
+            console.log("Clip-Dauer abgelaufen, wechsle zum nächsten");
             playNextClip();
-        }, 120000); // Maximale Dauer: 2 Minuten, dann auf jeden Fall weiter
+        }, (clipDuration + 5) * 1000);
+        
+        // Timer 3: Ein längerer Worst-Case-Timeout
+        setTimeout(() => {
+            // Entferne das Info-iframe
+            if (clipInfoFrame && clipInfoFrame.parentNode) {
+                clipInfoFrame.parentNode.removeChild(clipInfoFrame);
+            }
+        }, (clipDuration + 10) * 1000);
     } else {
         // Wenn kein gültiger Clip verfügbar ist, erneut Clips laden
         loadClips().then(() => {
