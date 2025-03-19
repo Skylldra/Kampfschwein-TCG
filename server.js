@@ -96,6 +96,20 @@ const generations = [
         { name: "Schraubenborsti", rarity: 3 },
         { name: "Pixie Schwein", rarity: 4 },
         { name: "Phönixschwein", rarity: 5 }
+    ],
+    [ // Generation 5
+        { name: "Oinkashi", rarity: 1 },
+        { name: "Schildschwein", rarity: 1 },
+        { name: "Bienenschwein", rarity: 1 },
+        { name: "Zeitschweinchen", rarity: 1 },
+        { name: "Borstenwolf", rarity: 2 },
+        { name: "Indiana Grunz", rarity: 1 },
+        { name: "Prof. Dr. Schweinstein", rarity: 2 },
+        { name: "Dunking Pig", rarity: 2 },
+        { name: "Ponyschwein", rarity: 3 },
+        { name: "Würfelschwein", rarity: 1 },
+        { name: "Leoink S. Kennedy", rarity: 4 },
+        { name: "Grunzer des Nordens", rarity: 4 }
     ]
 ];
 const totalGenerations = generations.length;  // Gesamtanzahl der Generationen für Navigationslogik
