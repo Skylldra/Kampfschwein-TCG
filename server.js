@@ -110,6 +110,20 @@ const generations = [
         { name: "Würfelschwein", rarity: 1 },
         { name: "Leoink S. Kennedy", rarity: 4 },
         { name: "Grunzer des Nordens", rarity: 4 }
+    ],
+    [ // Generation 6
+        { name: "Meredith [Lake]", rarity: 1 },
+        { name: "Henry [Firewatch]", rarity: 1 },
+        { name: "Jina's Crush [Palia]", rarity: 1 },
+        { name: "Sable [DBD]", rarity: 2 },
+        { name: "Vaultpig [Fallout 76]", rarity: 1 },
+        { name: "Gramps [Neighbors: S.W.]", rarity: 1 },
+        { name: "Zoe [Road 96]", rarity: 1 },
+        { name: "Mita [MiSide]", rarity: 1 },
+        { name: "Connor [DBH]", rarity: 1 },
+        { name: "Ghosthunter [Phasmo]", rarity: 1 },
+        { name: "Journalist [Headliners]", rarity: 1 },
+        { name: "Tidus & Yuna [FFX]", rarity: 5 }
     ]
 ];
 const totalGenerations = generations.length;  // Gesamtanzahl der Generationen für Navigationslogik
